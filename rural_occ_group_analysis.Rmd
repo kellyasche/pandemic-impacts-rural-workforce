@@ -1,0 +1,2141 @@
+---
+title: "Rural occupation group analysis"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(sf)
+library(ggrepel)
+library(scales)
+library(shiny)
+library(shinycssloaders)
+library(ggiraph)
+library(kableExtra)
+library(rmapshaper)
+library(cowplot)
+library(DT)
+library(htmlwidgets)
+library(RColorBrewer)
+library(extrafont)
+library(lubridate)
+library(zoo)
+
+loadfonts()
+```
+
+```{r loading jon docs and shapefiles, cache=TRUE, include=FALSE}
+theme_bar <- theme_bw() +
+  theme(panel.grid.major = element_line(color = "grey70", size = 0.1),
+        panel.grid.minor = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_text(face = "bold"),
+        panel.border = element_blank(),
+        legend.background = element_rect(fill = "transparent", color = "transparent"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.key.size = unit(1, "lines"),
+        legend.margin = margin(0,0,0,0),
+        legend.title = element_blank(),
+        legend.text = element_text(margin = margin(l = 2)),
+        text = element_text(family = "Arial"))
+
+theme_line <- theme_bw() +
+  theme(legend.background = element_rect(fill = "transparent", color = "transparent"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.text = element_text(margin = margin(l = 2)),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey70", size = 0.1),
+        axis.ticks = element_blank(),
+        axis.text = element_text(face = "bold"),
+        panel.border = element_blank(),
+        legend.margin = margin(0,0,0,0),
+        legend.key.size = unit(1, "lines"),
+        text = element_text(family = "Arial"))
+
+
+theme_sf <- theme_bw() +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_blank(),
+        panel.grid.major = element_line(color = "white"),
+        panel.border = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        legend.title = element_blank(),
+        legend.text = element_text(margin = margin(l = 2)),
+        legend.margin = margin(0,0,0,0),
+        legend.key.size = unit(1, "lines"),
+        text = element_text(family = "Arial"))
+
+regions <- read_csv("Data/Join docs/county_regions.csv") %>%
+    select(5,6) %>%
+    unique() %>%
+    mutate(edr = str_replace(edr, "  ", " "),
+           planning.region = str_replace(planning.region, " Minnesota", ""),
+           planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+           edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+counties.regions <- read_csv("Data/Join docs/county_regions.csv") %>%
+  mutate(countyfp = formatC(countyfp, width = 3, flag = "0"),
+         Name = str_to_title(Name),
+         Name = str_replace(Name, "Q", "q"),
+         Name = str_replace(Name, "Of The", "of the"),
+         Name = str_replace(Name, "Mcleod", "McLeod"),
+         Dem_Desc = ifelse(Name == "Minnesota", "Minnesota", Dem_Desc) ,
+         edr = str_replace(edr, "  ", " "),
+         planning.region = str_replace(planning.region, " Minnesota", ""),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+color.ruca <- c("Entirely rural" = "#009933", "Town/rural mix" = "#99CC33", "Urban/town/rural mix" = "#CC9966", "Entirely urban" = "#754C29", "Minnesota" = "black")
+
+color.pr <- c("Northwest" = "#4575b4","Northeast" = "#e0f3f8", "Central" = "#fee090", "Seven County Mpls-St Paul" = "#d73027", "Southwest" = "#91bfdb", "Southeast" = "#fc8d59", "Minnesota" = "black")
+
+color.edr <- c("EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6", "EDR 3 - Arrowhead" = "#fe9929", "EDR 4 - West Central" = "#8856a7", "EDR 5 - North Central" = "#810f7c", "EDR 6E- Southwest Central" = "#e5f5f9", "EDR 6W- Upper Minnesota Valley" = "#bdc9e1", "EDR 7E- East Central" = "#99d8c9", "EDR 7W- Central" = "#2ca25f", "EDR 8 - Southwest" = "#74a9cf", "EDR 9 - South Central" = "#0570b0", "EDR 10 - Southeast" = "#d7301f", "EDR 11 - 7 County Twin Cities" = "#d8b365", "Minnesota" = "black")
+
+color.six <- c("#009933", "#4575b4", "grey", "#fee090", "#fc8d59", "#d73027")
+
+```
+
+```{r shapefiles, include=FALSE, cache=TRUE}
+edr_bound <- st_read("Data/Shapefiles/RDO shapefiles/rdo.shp", quiet = TRUE)
+
+pr_bound <- st_read("Data/Shapefiles/planning region shapefiles/PlanningRegion_2006.shp", quiet = TRUE) %>%
+  mutate(PlanningRe = str_replace(PlanningRe, "Metro", "Seven County Mpls-St Paul"))
+```
+
+```{r master ui objects, include=FALSE, cache=TRUE}
+ui.county <- read_csv("Data/UI/Master-ui-claims-total-county.csv")
+
+ui.edr <- read_csv("Data/UI/Master-ui-claims-total-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota")) %>%
+  left_join(regions, by = "edr") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+ui.pr <- read_csv("Data/UI/Master-ui-claims-total-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+ui.occ.edr <- read_csv("Data/UI/Master-ui-claims-occ-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast")) 
+
+ui.occ.pr <- read_csv("Data/UI/Master-ui-claims-occ-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast")) 
+
+```
+
+```{r master oes objects, include=FALSE, cache=TRUE}
+
+oes.edr <- read_csv("Data/Occupations/OES/Master-oes-edr.csv") %>%
+   mutate(edr = str_replace(edr, "  ", " "),
+          edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota")) %>%
+  left_join(regions, by = "edr") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+oes.pr <- read_csv("Data/Occupations/OES/Master-oes-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+```
+
+```{r master job postings objects, include=FALSE, cache=TRUE}
+master.job.postings <- read_csv("Data/Job postings/master-job-postings.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+job.postings.unique.by.week.county <- master.job.postings %>%
+  group_by(posting.date) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions)
+
+job.postings.unique.by.month.county <- master.job.postings %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(posting.month) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions)
+
+job.postings.date <- job.postings.unique.by.week.county %>%
+  summarise(max = max(posting.date))
+```
+
+```{r master job postings with job family objects, include=FALSE, cache=TRUE}
+master.job.postings.with.family <- read_csv("Data/Job postings/master-job-postings-job-family.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+```
+
+```{r master job vacancies, include=FALSE, cache=TRUE}
+master.jv.pr <- read_csv("Data/Job vacancies/Master-jv-occ-2019-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+master.jv.edr <- read_csv("Data/Job vacancies/Master-jv-occ-2019-edr.csv") %>%
+  left_join(regions, by = "edr") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+master.jv.2005.2020.pr <- read_csv("Data/Job vacancies/Master-jv-2005-2020-pr.csv") %>%
+  mutate(planning.region = str_replace(planning.region, ", MN", ""),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         planning.region = as.factor(planning.region))
+
+```
+
+<br>
+
+# Total UI Continued Claims{.tabset}
+
+Leading up to the pandemic, every region had a stable unemployment rate. The highest was in Northwest Minnesota where the number of unemployment continued claims was hovering around 4% of the region's total employment. The seven-county metro had the lowest and was hovering around 1.8%.
+
+Once the shut-down occured due to the pandemic, the number of claims as a percentage of employment was highest in Northeast and Central where it was around 17%. The percentage in Southwest Minnesota stayed relatively low during this time with a percentage hovering around 10%. Since that time, the percentages have decreased but have stayed relatively high in the Seven-county metro as well as Northeast and Central.
+
+Breaking it down a bit furthe, EDR 2 - Headwaters and EDR 5 - North Central remain a bit higher in Northwest Minnesota. In the Central planning region, EDR 7E - East Central, continues to remain above 10%. 
+
+<br>
+
+```{r prep ui claims, include=FALSE, cache=TRUE}
+emp.pr <- oes.pr %>%
+  filter(SocLevel == 0) %>%
+  select(1,7)
+
+ui.oes.pr <- ui.pr %>%
+  gather(key = "date", value = "ui.claims", 3:ncol(ui.pr)) %>%
+  left_join(emp.pr, by = "planning.region") %>%
+  mutate(ui.pct.empCount = ui.claims/EmpCount,
+         date = as_date(date, format = "%m/%d/%Y"))
+  
+ui.oes.map.pr <- ui.oes.pr %>%
+  filter(date == max(date),
+         planning.region != "Minnesota") %>%
+  left_join(pr_bound[,c(1,9)], by = c("planning.region" = "PlanningRe"))
+
+emp.edr <- oes.edr %>%
+  filter(SocLevel == 0) %>%
+  select(1,7)
+
+ui.oes.edr <- ui.edr %>%
+  gather(key = "date", value = "ui.claims", 3:(ncol(ui.edr)-1)) %>%
+  left_join(emp.edr, by = "edr")  %>%
+  mutate(ui.claims = as.integer(ui.claims),
+         ui.pct.empCount = ui.claims/EmpCount,
+         date = as_date(date, format = "%m/%d/%Y"))%>%
+  drop_na(date)
+
+ui.oes.map.edr <- ui.oes.edr %>%
+  filter(date == max(date)) %>%
+  mutate(RDCNUM = str_sub(edr, 5,6),
+         RDCNUM = trimws(RDCNUM, which = "both")) %>%
+  left_join(edr_bound[,c(5,10)], by = "RDCNUM")
+
+```
+
+## Planning Regions{.tabset}
+
+<br>
+
+### Chart
+```{r chart ui pct emp pr}
+ui.pct.emp.pr.plot <- ggplot(ui.oes.pr, aes(date, ui.pct.empCount, color = planning.region)) +
+  geom_smooth(se = FALSE, size = 2) +
+  geom_point_interactive(size = 3, aes(data_id = ui.pct.empCount, tooltip = paste(planning.region, "\nDate: ", date, "\nTotal employment in 2020: ", comma(EmpCount), "\nTotal unemployment continued claims: ", comma(ui.claims), "\nUnemployment claims as pct of total employment: ", percent(ui.pct.empCount), sep = ""))) +
+  labs(x="", y = "", color="", title = "Unemployment claims as a percent of total employment")+
+  scale_y_continuous(labels=scales::percent)+
+  scale_x_date(date_breaks = "1 month")+
+  theme_line+
+  scale_color_manual(values= color.pr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 35, hjust = 1),
+        text = element_text(size = 16))
+
+girafe(ggobj = ui.pct.emp.pr.plot, width_svg = 8) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+
+```
+
+### Map
+
+<br>
+
+```{r map ui pct emp pr map}
+ui.pct.emp.pr.map <- ggplot(ui.oes.map.pr) +
+  geom_sf_interactive(color = "grey85", aes(geometry = geometry, fill = ui.pct.empCount, data_id = planning.region, tooltip = paste(planning.region, "\nDate: ", date, "\nTotal unemployment claims: ", comma(ui.claims), "\nTotal employment: ", comma(EmpCount), "\nUnemployment as a % of employment: ", percent(ui.pct.empCount), sep = ""))) +
+  theme_sf+
+  scale_fill_gradient(low = "#fff7fb",
+                      high = "#023858") +
+  labs(title = paste("Unemployment continued claims as a % of employment,\n", max(ui.oes.map.pr$date, na.rm = TRUE))) +
+  theme(legend.box.margin = margin(50, 0, 0, -100))
+
+girafe(ggobj = ui.pct.emp.pr.map,
+       options = list(opts_selection(type = "none")))
+
+```
+
+## EDR{.tabset}
+
+<br>
+
+### Chart
+```{r ui pct emp edr, fig.height=9}
+ui.pct.emp.edr.plot <- ggplot(ui.oes.edr, aes(date, ui.pct.empCount, color = edr)) +
+  facet_wrap(~planning.region, ncol = 2)+
+  geom_smooth(se = FALSE, size = 2) +
+  geom_point_interactive(size = 3, aes(data_id = ui.pct.empCount, tooltip = paste(edr, "\nDate: ", date, "\nTotal employment in 2020: ", comma(EmpCount), "\nTotal unemployment continued claims: ", comma(ui.claims), "\nUnemployment claims as pct of total employment: ", percent(ui.pct.empCount), sep = ""))) +
+  labs(x="", y = "", color="", title = "Unemployment claims as a percent of total employment")+
+  scale_y_continuous(labels=scales::percent)+
+  scale_x_date(date_breaks = "1 month")+
+  theme_line+
+  scale_color_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 35, hjust = 1))
+
+girafe(ggobj = ui.pct.emp.edr.plot, height_svg = 8) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE))
+
+
+```
+
+### Map
+
+<br>
+
+```{r map ui pct emp edr}
+ui.pct.emp.edr.map <- ggplot(ui.oes.map.edr) +
+  geom_sf_interactive(color = "grey85", aes(geometry = geometry, fill = ui.pct.empCount, data_id = edr, tooltip = paste(edr, "\nDate: ", date, "\nTotal unemployment claims: ", comma(ui.claims), "\nTotal employment: ", comma(EmpCount), "\nUnemployment as a % of employment: ", percent(ui.pct.empCount), sep = ""))) +
+  theme_sf+
+  scale_fill_gradient(low = "#fff7fb",
+                      high = "#023858") +
+  labs(title = paste("Unemployment continued claims as a % of employment,\n", max(ui.oes.map.edr$date))) +
+  theme(legend.box.margin = margin(50, 0, 0, -100))
+
+girafe(ggobj = ui.pct.emp.edr.map,
+       options = list(opts_selection(type = "none")))
+
+```
+
+<br>
+
+# Unemployment continued claims by occupation{.tabset}
+
+The occupation groups that were in the top 7 most impacted in our Planning Regions include;
+
+1. Construction and extraction: Although this occupation has high unemployment in the beginning of the year, it doesn't seem to have recovered this summer like it typically does. This occupation group only appears in regions outside of the twin cities as being impacted.
+
+2. Educational instruction and library: This occupation has seen an increase in claims across most of rural Minnesota throughout the summer. It is not present in Southeast Minnesota as an impacted occupation group.
+
+3. Food preparation and serving related: The number one most impacted occupation group across all regions in the state. It's been particularly brutal in Central Minnesota where unemployment claims were over 65% of total employment in that occupation group during the peak of the pandemic. This group continues to be the most impacted.
+
+4. Health care support: This was particularly hit hard in mid-summer when revenue and services provided by healthcare providers was very low. It is beginning to recover. Not surprisingly, Southeast and Central Minnesota was hit the hardest where unemployment claims peaked at 15% of employment within that occupation group.
+
+5. Installation, maintenance, and repair: This occupation group was only in Northeast Minnesota has been severly impacted. This might have to do with the closing of the mines during the early period of the pandemic. 
+
+6. Management: this occupation group only shows up in the Twin Cities as being impacted.
+
+7. Office and admin support: All regions saw this occupational group be significantly impacted. The number of claims made up about 7% to 10% of employment in this occupational group across the state.
+
+8. Production: Our rural areas seem to have experienced the largest impacts in this occupational group. It shows up in Northwest, Central, Southwest, and Southeast as being an occupation group being one of the largest impacted occupations. During the peak of the pandemic UI claims made up 10% to 15% of the employment within the occupation.
+
+9. Sales and related: For all regions, this occupation group was the 2nd most impacted among all occupations. The number of claims was between 12% and 16% of employment within this occupation group. 
+
+10. Transportation and material moving: This occupation group only shows up in the Twin cities and Southeast Minnesota as being significantly impacted.
+
+The larger trends among these occupations is that they are all trending towards a stabilized unemployment number, but are still higher than what they were in January (except for construction).
+
+
+<br>
+
+```{r prep ui claims and emp by occ, include=FALSE, cache=TRUE}
+ui.emp.occ.pr <- ui.occ.pr %>%
+  gather(key = "date", value = "ui.claims", 3:ncol(ui.occ.pr)) %>%
+  mutate(date = as_date(date, format = "%m/%d/%Y"),
+         `Dim Title` = str_replace(`Dim Title`, "Arts, Design, Entertainment, Sports, and Media Occ", "Arts, Design, Entertainment, Sports, and Media Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Building & Grounds Cleaning & Maintenance Occup.", "Building and Grounds Cleaning and Maintenance Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Community and Social Services Occupations", "Community and Social Service Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Education, Training, and Library Occupations", "Educational Instruction and Library Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Total Claims", "Total, All Occupations")) %>%
+  filter(`Dim Title` != "Military Specific Occupations") %>%
+  left_join(oes.pr[,c(1,6,7)], by = c("planning.region", "Dim Title" = "SocTitleL")) %>%
+  mutate(ui.pct.emp = ui.claims / EmpCount,
+         `Dim Title` = as.factor(`Dim Title`))
+
+ui.emp.occ.edr <- ui.occ.edr %>%
+  gather(key = "date", value = "ui.claims", 3:(ncol(ui.occ.edr)-1)) %>%
+  mutate(date = as_date(date, format = "%m/%d/%Y"),
+         ui.claims = ifelse(is.na(ui.claims), 0, ui.claims),
+         `Dim Title` = str_replace(`Dim Title`, "Arts, Design, Entertainment, Sports, and Media Occ", "Arts, Design, Entertainment, Sports, and Media Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Building & Grounds Cleaning & Maintenance Occup.", "Building and Grounds Cleaning and Maintenance Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Community and Social Services Occupations", "Community and Social Service Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Education, Training, and Library Occupations", "Educational Instruction and Library Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Total Claims", "Total, All Occupations")) %>%
+  filter(`Dim Title` != "Military Specific Occupations") %>%
+  left_join(oes.edr[,c(1,6,7)], by = c("edr", "Dim Title" = "SocTitleL")) %>%
+  mutate(ui.pct.emp = ui.claims / EmpCount,
+         `Dim Title` = as.factor(`Dim Title`))
+
+```
+
+## Planning Region{.tabset}
+
+Not surprisingly, food preparation and serving related occupations were hit the hardest and was equally bad across all regions of the state. Interestingly, the unemployment claims as a percentage of employment in that occupation was highest in Central and Northwest Minnesota where it reached 60% during the peak of the pandemic. It was closer to 20% - 30% across all other regions. It's currently sitting at 20% - 30% in Central and Northwest and closer to 15% across the other regions.
+
+In Northwest, Southwest, and Southeast, production occupations experienced a large number of unemployment claims. During the peak of the pandemic, unemployment claims reached 10% to 15% of the employment in that occupation. It's currently between 5% and 10% of employment.
+
+Sales and related occupations hit across all regions of the state equally, with the number of unemployment claims reaching 10% to 15% of employment within that occupation.
+
+A few differences do exist between the twin cities and the other regions. Management occupations were one of the top 7 most impacted occupations in the twin cities where that was not the case in the other regions. This is also true for transportaion and material moving, except for Southeast Minnesota where that was also a top 7 most impacted occupation.
+
+One last difference is construction and extraction were present as a top 7 most impacted occupation outside of the twin cities
+
+<br>
+
+### Table of all occupations
+
+<br>
+
+```{r table ui occ claims pr}
+ui.emp.occ.pr.table <- ui.emp.occ.pr %>%
+  select(1,2,3,4,5) %>%
+  filter(`Dim Title` != "Total, All Occupations",
+         planning.region != "Minnesota") %>%
+  rename(`Planning Region` = 1,
+         `Occupation` = 2,
+         `Date of claims data` = 3,
+         `Number of claims` = 4,
+         `Employment in occupation` = 5) %>%
+  mutate(Occupation = str_replace(Occupation, " Occupations", ""))
+
+datatable(ui.emp.occ.pr.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+
+```
+
+### Trends of top 7 most impacted occupations
+
+<br>
+
+```{r chart ui occ claims pr, fig.height=9}
+ui.emp.occ.top10.pr <- ui.emp.occ.pr %>%
+  filter(`Dim Title` != "Total, All Occupations",
+         planning.region != "Minnesota",
+         date == max(date)) %>%
+  group_by(planning.region) %>%
+  top_n(7, ui.claims) %>%
+  ungroup()
+
+ui.emp.occ.top10.trends.pr <- ui.emp.occ.pr %>%
+  right_join(ui.emp.occ.top10.pr[,c(1,2)], by = c("planning.region", "Dim Title")) %>%
+  droplevels() %>%
+  mutate(`Dim Title` = str_replace(`Dim Title`, " Occupations", ""))
+
+ui.emp.occ.top10.points.pr <- ui.emp.occ.top10.trends.pr %>%
+  group_by(planning.region, `Dim Title`) %>%
+  filter(row_number() %% 5 == 1) %>%
+  ungroup()
+  
+
+ui.emp.occ.top10.trends.pr.plot <- ggplot(ui.emp.occ.top10.trends.pr, aes(date, ui.claims, color = `Dim Title`)) +
+  geom_smooth(se = FALSE, size = 2) +
+  geom_point_interactive(data = ui.emp.occ.top10.points.pr, size = 3, aes(data_id = ui.claims, tooltip = paste(planning.region, "\nDate: ", date, "\nNumber of UI continued claims: ", comma(ui.claims), "\nOccupation: ", `Dim Title`, "\nNumber employed in occupation: ", comma(EmpCount), "\nUI claims as a percent of employment in occupation: ", percent(ui.pct.emp))))+
+  facet_wrap(~planning.region, ncol = 2, scales = "free_y") +
+  labs(x="", y = "", color="", title = "UI continued claims in top 7 most impacted occupations")+
+  scale_y_continuous(labels=scales::comma)+
+  scale_x_date(date_breaks = "1 month") +
+  theme_line+
+  scale_color_manual(values = brewer.pal(12, "Paired"),
+                     guide = guide_legend(ncol = 2)) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 35, hjust = .9))
+
+girafe(ggobj = ui.emp.occ.top10.trends.pr.plot, height_svg = 8) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE))
+
+
+```
+
+## EDR{.tabset}
+
+Food and preparation appears to be the most impacted occupation across all EDRs in the state EXCEPT EDR 1 - Northwest where production was the most impacted. Even with the most recent data, production and food preparation continue to be equal. At the peak of the pandemic, unemployment claims in production occupations was 14% of employment within that occupation. Even though there were less claims in food preparation in EDR 1, the number was still 41% of employment in that occupation group.
+
+Across all other regions, food preparation was the most impacted occupation. During the peak, unemployment claims reached 130% (EDR 7E - East Central), 75% (North Central), down to 25% in EDR 6W.
+
+Some EDRs have seen an increasing number of claims from education and instructional occupations. This seems to be particularly true in EDRs where there are larger educational institutions in it. This seems to be the case for EDRs 1, 2, 3, 5, 4, 7E, 7W, and 9. 
+
+Transportation and material moving also appear in a few EDRS but not others. EDRs 1, 4, 6E, 6W, 10, and 11 all seem to have this group as a top 7 impacted.
+
+
+
+<br>
+
+### Table of all occupations
+
+<br>
+
+```{r table ui occ claims edr}
+ui.emp.occ.edr.table <- ui.emp.occ.edr %>%
+  select(1,3,2,4,5,6) %>%
+  filter(`Dim Title` != "Total, All Occupations",
+         edr != "Minnesota") %>%
+  rename(`edr` = 1,
+         `Planning Region` = 2,
+         `Occupation` = 3,
+         `Date of claims data` = 4,
+         `Number of claims` = 5,
+         `Employment in occupation` = 6) %>%
+  mutate(Occupation = str_replace(Occupation, " Occupations", ""))
+
+datatable(ui.emp.occ.edr.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+
+```
+
+### Trends of top 7 most impacted occupations
+
+<br>
+
+```{r chart ui occ claims edr, fig.height=21}
+ui.emp.occ.top10.edr <- ui.emp.occ.edr %>%
+  filter(`Dim Title` != "Total, All Occupations",
+         edr != "Minnesota",
+         date == max(date)) %>%
+  group_by(edr) %>%
+  top_n(7, ui.claims) %>%
+  ungroup()
+
+ui.emp.occ.top10.trends.edr <- ui.emp.occ.edr %>%
+  right_join(ui.emp.occ.top10.edr[,c(1,2)], by = c("edr", "Dim Title")) %>%
+  droplevels() %>%
+  mutate(`Dim Title` = str_replace(`Dim Title`, " Occupations", ""))
+
+ui.emp.occ.top10.points.edr <- ui.emp.occ.top10.trends.edr %>%
+  group_by(edr, `Dim Title`) %>%
+  filter(row_number() %% 5 == 1) %>%
+  ungroup()
+  
+
+ui.emp.occ.top10.trends.edr.plot <- ggplot(ui.emp.occ.top10.trends.edr, aes(date, ui.claims, color = `Dim Title`)) +
+  geom_smooth(se = FALSE, size = 2) +
+  geom_point_interactive(data = ui.emp.occ.top10.points.edr, size = 3, aes(data_id = ui.claims, tooltip = paste(edr, "\nDate: ", date, "\nNumber of UI continued claims: ", comma(ui.claims), "\nOccupation: ", `Dim Title`, "\nNumber employed in occupation: ", comma(EmpCount), "\nUI claims as a percent of employment in occupation: ", percent(ui.pct.emp))))+
+  facet_wrap(~edr, ncol = 2, scales = "free_y") +
+  labs(x="", y = "", color="", title = "UI continued claims in top 7 most impacted occupations")+
+  scale_y_continuous(labels=scales::comma)+
+  scale_x_date(date_breaks = "1 month") +
+  theme_line+
+  scale_color_manual(values = brewer.pal(12, "Paired"),
+                     guide = guide_legend(ncol = 2)) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 35, hjust = .9))
+
+girafe(ggobj = ui.emp.occ.top10.trends.edr.plot, height_svg = 20) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE))
+
+
+```
+
+<br>
+
+# Trends in job postings
+
+<br>
+
+## Number of job postings in seven days as a percentage of total jobs in each region{.tabset}
+
+The job postings data are all active job postings gathered by the National Labor Exchange during the time frame 2020-09-01 through `r job.postings.date`. The postings were downloaded by MN DEED.
+
+The charts below provides a peek into the trends in new job postings by providing the sum of unique jobs posted each month as a percentage of the total number of filled jobs using the Occupational Employment Statistics data for 2020.
+
+Overall, the numbers were similar across all regions of Minnesota. The number of job postings in each region equaled between 3% and 3.5% of total jobs in each region. In addition, the percentages increased from September to October which indicates an increase in the number of job postings.
+
+The highest percentages are in Southwest, Northwest, and Central Minnesota. 
+
+<br>
+
+```{r prep total monthly job postings as pct of employment, include=FALSE, cache=TRUE}
+job.postings.monthly.total.pr <- job.postings.unique.by.month.county %>%
+  group_by(planning.region, posting.month) %>%
+  summarise(job.postings.total = n()) %>%
+  ungroup()
+
+job.postings.monthly.total.emp.pr <- job.postings.monthly.total.pr %>%
+  left_join(emp.pr, by = "planning.region") %>%
+  mutate(job.postings.pct.emp = job.postings.total/EmpCount,
+         data_id = as.character(seq(n())))
+
+job.postings.monthly.total.edr <- job.postings.unique.by.month.county %>%
+  group_by(edr, planning.region, posting.month) %>%
+  summarise(job.postings.total = n()) %>%
+  ungroup()
+
+job.postings.monthly.total.emp.edr <- job.postings.monthly.total.edr %>%
+  left_join(emp.edr, by = "edr") %>%
+  mutate(job.postings.pct.emp = job.postings.total/EmpCount,
+         data_id = as.character(seq(n())))
+
+jv.2019.pr <- master.jv.pr %>%
+  filter(soclevel == 0,
+         periodyear == 2019,
+         planning.region != "Minnesota") %>%
+  group_by(planning.region) %>%
+  summarise(vacanrate = mean(vacanrate)) %>%
+  ungroup() %>%
+  mutate(vacanrate = vacanrate / 100)
+
+jv.2019.edr <- master.jv.edr %>%
+  filter(soclevel == 0,
+         periodyear == 2019,
+         edr != "Minnesota") %>%
+  group_by(edr, planning.region) %>%
+  summarise(vacanrate = mean(vacanrate)) %>%
+  ungroup() %>%
+  mutate(vacanrate = vacanrate / 100)
+
+
+```
+
+### Planning Region
+
+<br>
+
+```{r chart total monthly job postings as pct of employment pr}
+job.postings.monthly.total.emp.pr.plot <- ggplot(job.postings.monthly.total.emp.pr, aes(posting.month, job.postings.pct.emp, fill = planning.region, group = planning.region)) +
+  geom_col_interactive(position = "dodge", aes(data_id = data_id, tooltip = paste(planning.region, "\nMonth: ", posting.month, "\nNumber of unique job postings: ", comma(job.postings.total), "\nNumber of jobs in region: ", comma(EmpCount), "\nJob postings as a % of total jobs in region: ", percent(job.postings.pct.emp, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Monthly job postings as a percent of total jobs by region")+
+  scale_y_continuous(labels=scales::percent)+
+  theme_bar+
+  scale_fill_manual(values= color.pr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+
+girafe(ggobj = job.postings.monthly.total.emp.pr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+job.postings.monthly.total.emp.pr.2019.plot <- ggplot(jv.2019.pr, aes(planning.region, vacanrate, fill = planning.region)) +
+  geom_col_interactive(position = "dodge", aes(data_id = planning.region, tooltip = paste(planning.region, "\nVacancy rate: ", percent(vacanrate, accuracy = .1), sep = ""))) +
+  geom_label(size = 5, aes(label = percent(vacanrate, accuracy = .1)), show.legend = FALSE, color = "white") +
+  labs(x="", y = "", color="", title = "2019 vacancy rate")+
+  scale_y_continuous(labels=scales::percent)+
+  theme_bar+
+  scale_fill_manual(values= color.pr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+
+girafe(ggobj = job.postings.monthly.total.emp.pr.2019.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+### EDR
+
+<br>
+
+```{r chart total monthly job postings as pct of employment edr}
+
+job.postings.monthly.total.emp.edr.plot <- ggplot(job.postings.monthly.total.emp.edr, aes(posting.month, job.postings.pct.emp, fill = edr, group = edr)) +
+  facet_wrap(~planning.region, ncol = 2) +
+  geom_col_interactive(position = "dodge", aes(data_id = data_id, tooltip = paste(edr, "\nMonth: ", posting.month, "\nNumber of unique job postings: ", comma(job.postings.total), "\nNumber of jobs in region: ", comma(EmpCount), "\nJob postings as a % of total jobs in region: ", percent(job.postings.pct.emp, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Monthly job postings as a percent of total jobs by region")+
+  scale_y_continuous(labels=scales::percent)+
+  theme_bar+
+  scale_fill_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+
+girafe(ggobj = job.postings.monthly.total.emp.edr.plot, width_svg = 10, height_svg = 20) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+job.postings.monthly.total.emp.edr.2019.plot <- ggplot(jv.2019.edr, aes(edr, vacanrate, fill = edr)) +
+  geom_col_interactive(position = "dodge", aes(data_id = edr, tooltip = paste(edr, "\nVacancy rate: ", percent(vacanrate, accuracy = .1), sep = ""))) +
+  facet_wrap(~planning.region, ncol = 2, scales = "free_x") +
+  geom_label(size = 5, aes(label = percent(vacanrate, accuracy = .1)), show.legend = FALSE, color = "white") +
+  labs(x="", y = "", color="", title = "2019 vacancy rate")+
+  scale_y_continuous(labels=scales::percent)+
+  theme_bar+
+  scale_fill_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18),
+        axis.text.x = element_text(angle = 25, hjust = .9))
+
+
+girafe(ggobj = job.postings.monthly.total.emp.edr.2019.plot, width_svg = 10, height_svg = 20) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+<br>
+
+
+## Total weekly job postings as a % of UI claims{.tabset}
+
+The following charts visualize the total number of posted jobs for each week as a percentage of the total UI claims in that same week.
+
+As can be clearly seen there is an increase in the number of job postings as a percentage of weekly UI claims since the beginning of September. This can either be because of lowering number of UI claims as section 1 of this report indicates, or because of an increasing number of job postings. It also could be both. 
+
+Also, it's worth noting that all of the regions outside of the seven county metro have higher percentages than the metro.
+
+
+
+<br>
+
+```{r prep weekly total job postings as % of weekly ui claims, include=FALSE, cache=TRUE}
+ui.weekly.pr <- ui.pr %>%
+  gather(key = "ui.date", value = "ui.claims", 3:ncol(ui.pr)) %>%
+  mutate(ui.date = mdy(ui.date)) %>%
+  mutate(ui.claims.month = month(ui.date, label = TRUE)) %>%
+  group_by(planning.region, ui.claims.month) %>%
+  arrange(ui.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup()
+
+job.postings.weekly.total.pr <- job.postings.unique.by.week.county %>%
+  group_by(planning.region, posting.date) %>%
+  summarise(job.postings.total = n()) %>%
+  ungroup() %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(planning.region, posting.month) %>%
+  arrange(posting.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup()
+
+job.postings.weekly.total.ui.pr <- job.postings.weekly.total.pr %>%
+  group_by(planning.region, posting.month) %>%
+  arrange(posting.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup() %>%
+  left_join(ui.weekly.pr, by = c("planning.region", "week.num", "posting.month" = "ui.claims.month")) %>%
+  drop_na(ui.claims) %>%
+  mutate(job.postings.pct.ui.claims =  job.postings.total / ui.claims,
+         month.week = paste(posting.month, ", ", week.num, sep = ""),
+         data_id = as.character(seq(n())))
+
+ui.weekly.edr <- ui.edr %>%
+  gather(key = "ui.date", value = "ui.claims", 3:ncol(ui.pr)) %>%
+  mutate(ui.date = mdy(ui.date)) %>%
+  mutate(ui.claims.month = month(ui.date, label = TRUE)) %>%
+  group_by(edr, planning.region, ui.claims.month) %>%
+  arrange(ui.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup()
+
+job.postings.weekly.total.edr <- job.postings.unique.by.week.county %>%
+  group_by(edr, planning.region, posting.date) %>%
+  summarise(job.postings.total = n()) %>%
+  ungroup() %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(edr,planning.region, posting.month) %>%
+  arrange(posting.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup()
+
+job.postings.weekly.total.ui.edr <- job.postings.weekly.total.edr %>%
+  group_by(edr, planning.region, posting.month) %>%
+  arrange(posting.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup() %>%
+  left_join(ui.weekly.edr, by = c("edr", "planning.region", "week.num", "posting.month" = "ui.claims.month")) %>%
+  drop_na(ui.claims) %>%
+  mutate(job.postings.pct.ui.claims =  job.postings.total / ui.claims,
+         month.week = paste(posting.month, ", ", week.num, sep = ""),
+         data_id = as.character(seq(n())))
+
+```
+
+### Planning Region
+
+<br>
+
+```{r chart weekly total job postings as % of weekly ui claims pr}
+job.postings.weekly.total.ui.pr.plot <- ggplot(job.postings.weekly.total.ui.pr, aes(posting.date, job.postings.pct.ui.claims, color = planning.region)) +
+  geom_line(size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(planning.region, "\nMonth: ", posting.month, "\nWeek of month: ", week.num, "\nNumber of job postings for week: ", comma(job.postings.total), "\nNumber of UI claims for week: ", comma(ui.claims), "\nJob postings as a % of UI claims: ", percent(job.postings.pct.ui.claims, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Weekly job postings as a percent of weekly UI claims") +
+  scale_y_continuous(labels=scales::percent) +
+  theme_line +
+  scale_color_manual(values = color.pr,
+                   guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+      text = element_text(size = 18))
+
+girafe(ggobj = job.postings.weekly.total.ui.pr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+### EDR
+
+<br>
+
+```{r chart weekly total job postings as % of weekly ui claims edr}
+job.postings.weekly.total.ui.edr.plot <- ggplot(job.postings.weekly.total.ui.edr, aes(posting.date, job.postings.pct.ui.claims, color = edr)) +
+  facet_wrap(~planning.region, ncol = 2) +
+  geom_line(size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(edr, "\nMonth: ", posting.month, "\nWeek of month: ", week.num, "\nNumber of job postings for week: ", comma(job.postings.total), "\nNumber of UI claims for week: ", comma(ui.claims), "\nJob postings as a % of UI claims: ", percent(job.postings.pct.ui.claims, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Weekly job postings as a percent of weekly UI claims") +
+  scale_y_continuous(labels=scales::percent) +
+  theme_line +
+  scale_color_manual(values = color.edr,
+                   guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+      text = element_text(size = 18))
+
+girafe(ggobj = job.postings.weekly.total.ui.edr.plot, width_svg = 10, height_svg = 20) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+<br>
+
+## Job posting trends vs. UI claim trends{.tabset}
+
+The following charts highlight the change in the number of weekly job postings and UI claims using an index to `r min(job.postings.weekly.total.pr$posting.date)`.
+
+IT's clear to see that the reason the increasing percentages in the previous charts is due to decreasing number of UI claims. Most regions have seen a decrease in UI claims of 50% or more. On the other hand, most regions have seen little change in the number of job postings.
+
+What this is likely telling us is that people are increasingly going back to their previous jobs or taking the jobs available. Unfortunately, we don't know which of these factors is more prominent. But it's likely that people are leaving unemployment to take their previous jobs.
+
+<br>
+
+```{r prep index job postings and UI claims, include=FALSE, cache=TRUE}
+job.postings.weekly.total.ui.index.pr <- job.postings.weekly.total.ui.pr %>%
+  group_by(planning.region) %>%
+  mutate(job.postings.total.index = job.postings.total / job.postings.total[posting.date == min(posting.date)],
+         ui.claims.index = ui.claims / ui.claims[posting.date == min(posting.date)]) %>%
+  ungroup() %>%
+  gather(key = "type", value = "number", 12:13) %>%
+  mutate(type = str_replace(type, "job.postings.total.index", "Total job postings index"),
+         type = str_replace(type, "ui.claims.index", "Total UI claims index"))
+
+job.postings.weekly.total.ui.index.edr <- job.postings.weekly.total.ui.edr %>%
+  group_by(edr, planning.region) %>%
+  mutate(job.postings.total.index = job.postings.total / job.postings.total[posting.date == min(posting.date)],
+         ui.claims.index = ui.claims / ui.claims[posting.date == min(posting.date)]) %>%
+  ungroup() %>%
+  gather(key = "type", value = "number", 13:14) %>%
+   mutate(type = str_replace(type, "job.postings.total.index", "Total job postings index"),
+         type = str_replace(type, "ui.claims.index", "Total UI claims index"))
+
+```
+
+### Planning Region
+
+<br>
+
+```{r chart index total job postings and weekly ui claims pr}
+job.postings.weekly.total.ui.index.pr.plot <- ggplot(job.postings.weekly.total.ui.index.pr, aes(x = posting.date, y = number, color = type)) +
+  facet_wrap(~planning.region, ncol = 2) +
+  geom_hline(yintercept = 1, color = "black") +
+  geom_line(size = 3) +
+  geom_label_repel(data = filter(job.postings.weekly.total.ui.index.pr, posting.date == max(posting.date)), size = 5,  aes(x = posting.date, y = number, label = percent(number, accuracy = .1), fontface = "bold", fill = type), show.legend = FALSE, color = "white") +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(planning.region, "\nMonth: ", posting.month, "\nWeek of month: ", week.num, "\nTotal job postings for the week: ", comma(job.postings.total), "\nTotal UI claims for the week: ", comma(ui.claims), "\nJob postings as a percentage of UI claims: ", percent(job.postings.pct.ui.claims, accuracy = .1), "\n", type, ": ", percent(number, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = paste("Weekly job postings and UI claims indexed to ", min(job.postings.weekly.total.ui.index.pr$posting.date))) +
+  scale_y_continuous(labels=scales::percent) +
+  theme_line +
+  scale_color_manual(values = brewer.pal(5, "PuBu"),
+                   guide = guide_legend(ncol = 3)) +
+  scale_fill_manual(values = brewer.pal(5, "PuBu")) +
+  theme(legend.position = "bottom",
+      text = element_text(size = 18))
+
+girafe(ggobj = job.postings.weekly.total.ui.index.pr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+### EDR
+
+<br>
+
+```{r chart index total job postings and weekly ui claims edr}
+job.postings.weekly.total.ui.index.edr.plot <- ggplot(job.postings.weekly.total.ui.index.edr, aes(x = posting.date, y = number, color = type)) +
+  facet_wrap(~edr, ncol = 2) +
+  geom_hline(yintercept = 1, color = "black") +
+  geom_line(size = 3) +
+  geom_label_repel(data = filter(job.postings.weekly.total.ui.index.edr, posting.date == max(posting.date)), size = 5,  aes(x = posting.date, y = number, label = percent(number, accuracy = .1), fontface = "bold", fill = type), show.legend = FALSE, color = "white") +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(edr, "\nMonth: ", posting.month, "\nWeek of month: ", week.num, "\nTotal job postings for the week: ", comma(job.postings.total), "\nTotal UI claims for the week: ", comma(ui.claims), "\nJob postings as a percentage of UI claims: ", percent(job.postings.pct.ui.claims, accuracy = .1), "\n", type, ": ", percent(number, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = paste("Weekly job postings and UI claims indexed to ", min(job.postings.weekly.total.ui.index.pr$posting.date))) +
+  scale_y_continuous(labels=scales::percent) +
+  theme_line +
+  scale_color_manual(values = brewer.pal(5, "PuBu"),
+                   guide = guide_legend(ncol = 3)) +
+  scale_fill_manual(values = brewer.pal(5, "PuBu")) +
+  theme(legend.position = "bottom",
+      text = element_text(size = 18))
+
+girafe(ggobj = job.postings.weekly.total.ui.index.edr.plot, width_svg = 10, height_svg = 20) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+<br>
+
+## COVID-19 impacts on number of job postings{.tabset}
+
+The following chart shows the number of job vacancies in the second quarter of each year indexed to 2005 levels. This will help us visualize the change over time. 
+
+What becomes immediately clear is that COVID-19 definitely had a significant impact on the number of job vacancies that planning regions experienced years prior. Nearly all of the regions saw their numbers cut in half from 2019. 
+
+Northwest: The region saw little change actually. In 2019 the number of job vacancies was 228% of 2005 levels. In 2020, it dipped a bit to 213%.
+
+Northeast: The region saw a modest change. In 2019 the number of job vacancies was 179% of 2005 levels. In 2020, it dipped down to 144%.
+
+Central: The region saw a modest change. In 2019 the number of job vacancies was 223% of 2005 levels, In 2020, it dipped down to 178%.
+
+Seven County Metro: The region saw a modest change. In 2019 the number of job vacancies was 252% of 2005 levels. In 2019 it dipped down to 193%.
+
+Southwest: The region saw a pretty significant change. In 2019 the number of job vacancies was 218% of 2005 levels. In 2019 it dipped down to 122%.
+
+Southeast: The region saw a modest change. In 2019 the number of job vacancies was 179% of 2005 levels. In 2019 it dipped down to 145%.
+
+<br>
+
+```{r prep index of job vacancies, include=FALSE, cache=TRUE}
+jv.index.pr <- master.jv.2005.2020.pr %>%
+  filter(quarter == "Second Quarter",
+         planning.region != "Minnesota",
+         soclevel == 0) %>%
+  group_by(planning.region) %>%
+  mutate(vacancies.index = vacancies/vacancies[year == 2005]) %>%
+  ungroup() %>%
+  mutate(data_id = seq(n()))
+```
+
+### Planning Region
+
+<br>
+
+```{r chart index of job vacancies pr}
+jv.index.pr.plot <- ggplot(jv.index.pr, aes(year, vacancies.index, color = planning.region)) +
+  geom_smooth(se = FALSE, size = 3) +
+  geom_hline(yintercept = 1, color = "black") +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(planning.region, "\nYear: ", year, "\nNumber of vacancies for 2nd quarter: ", comma(vacancies), "\nVacancies indexed to 2005 values: ", percent(vacancies.index, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Number of 2nd quarter job vacancies index to 2005 levels")+
+  scale_y_continuous(labels=scales::percent)+
+  scale_x_continuous(breaks = seq(1900, 2050, 2)) +
+  theme_line+
+  scale_color_manual(values= color.pr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = jv.index.pr.plot, width_svg = 10, height_svg = 7) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+```
+
+
+<br>
+
+# Occupations in high demand
+
+1. Distribution of occupations in each region by occupation
+2. Top 10 occupations in demand currently
+3. COVID-19 impacts on occupations in demand
+
+<br>
+
+## Distribution of job postings by occupation{.tabset}
+
+The purpose of the charts below are not necessarily to identify specific occupations but rather to see the distribution of positions available across occupations. Does the region have a balanced distribution (more bunched together) or does it have a few occupations in very high demand while others are lower. 
+
+As can be seen immediately, the seven county metro has the most condensed distribution of all the regions. Most occupations have a demand between 1% and 13%. On the other hand, the other regions have occupations that make up a signicicantly larger portion of the positions available. For example, production occupations make up nearly 20% of all the positions available in Central Minnesota with only a few other occupations taking up between 5% and 10% of the positions. Most are below 5%.
+
+When assessing the distribution by EDRs, there is a bit more nuance in the narrative. The Seven-county metro still has a very balanced distribution, but along with this region EDRs 7E - East Central, 6W - Upper Minnesota Valley, 10 - Southeast, and 1 - Northwest all have distributions with a significant number of occupations taking up between 5% and 10% of the positions available.
+
+<br>
+
+```{r prep job postings by occupation distribution, include=FALSE, cache=TRUE}
+job.postings.occ.dist.pr <- master.job.postings.with.family %>%
+  mutate(Job_Family = as.factor(Job_Family)) %>%
+  group_by(planning.region) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions) %>%
+  group_by(planning.region, Job_Family) %>%
+  summarise(job.postings = n()) %>%
+  ungroup() %>%
+  group_by(planning.region) %>%
+  mutate(total.postings = sum(job.postings)) %>%
+  ungroup() %>%
+  mutate(job.postings.pct.total = job.postings / total.postings,
+         data_id = seq(n())) %>%
+  droplevels()
+
+job.postings.occ.dist.pr.colors <- job.postings.occ.dist.pr %>%
+  select(Job_Family) %>%
+  distinct(Job_Family) %>%
+  nrow() 
+  
+job.postings.occ.dist.edr <- master.job.postings.with.family %>%
+  mutate(Job_Family = as.factor(Job_Family)) %>%
+  group_by(edr, planning.region) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions) %>%
+  group_by(edr, planning.region, Job_Family) %>%
+  summarise(job.postings = n()) %>%
+  ungroup() %>%
+  group_by(edr, planning.region) %>%
+  mutate(total.postings = sum(job.postings)) %>%
+  ungroup() %>%
+  mutate(job.postings.pct.total = job.postings / total.postings,
+         data_id = seq(n())) %>%
+  droplevels()
+
+  
+```
+
+### Planning Region
+
+<br>
+
+```{r job postings by occupation distribution pr}
+job.postings.occ.dist.pr.plot <- ggplot(job.postings.occ.dist.pr, aes(planning.region, job.postings.pct.total, color = Job_Family)) +
+  geom_point_interactive(size = 4, aes(data_id = data_id, tooltip = paste(planning.region, "\nJob family: ", Job_Family, "\nNumber of positions available: ", comma(job.postings), "\nPercent of total positions available: ", percent(job.postings.pct.total, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Distribution of occupations available")+
+  scale_y_continuous(labels=scales::percent)+
+  theme_bar+
+  scale_color_manual(values = colorRampPalette(brewer.pal(12, "RdYlBu"))(job.postings.occ.dist.pr.colors),
+                     guide = guide_legend(ncol = 2)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+
+girafe(ggobj = job.postings.occ.dist.pr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+### EDR
+
+<br>
+
+```{r job postings by occupation distribution edr}
+job.postings.occ.dist.edr.plot <- ggplot(job.postings.occ.dist.edr, aes(edr, job.postings.pct.total, color = Job_Family)) +
+  facet_wrap(~planning.region, ncol = 2, scales = "free_x") +
+  geom_point_interactive(size = 4, aes(data_id = data_id, tooltip = paste(edr, "\nJob family: ", Job_Family, "\nNumber of positions available: ", comma(job.postings), "\nPercent of total positions available: ", percent(job.postings.pct.total, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Distribution of occupations available")+
+  scale_y_continuous(labels=scales::percent)+
+  theme_bar+
+  scale_color_manual(values = colorRampPalette(brewer.pal(12, "RdYlBu"))(job.postings.occ.dist.pr.colors),
+                     guide = guide_legend(ncol = 2)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18),
+        axis.text.x = element_text(angle = 25, hjust = .9))
+
+
+girafe(ggobj = job.postings.occ.dist.edr.plot, width_svg = 10, height_svg = 20) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+<br>
+
+## Top 10 occupations in demand Sep - `r month(job.postings.date$max, label = TRUE)`{.tabset}
+
+The following tables provide the top 10 occupations that have the highest number of job postings in each region and the percentage their total makes up of the total number of job postings.
+
+There are clear differences in occupations in demand dependent on geography. Just to give you a sense, there are 15 different occupations that are ranked in the top 10 in-demand occupations in at least one of the planning regions. When filter to only the top 5, there are 9 different occupations.
+
+The list below provides each of the occupations that were ranked as a top-5 in-demand occupation in at least one of the planning regions. 
+
+Office and administrative support occupations showed up in the top 5 for all planning regions in Minnesota. It was ranked higher in our core urban areas - seven county metro and Central Minnesota - while ranking #3 or #4 in the other regions.
+
+Sales and related also comes up in the top 5 for 5 of the regions (not Northwest).
+
+One occupaton worth mentioning is Healthcare Practitioners. Positions for this occupation were in the top 5 in 4 of the 6 planning regions, and was either the first or second most in-demand occupation for those regions.
+
+One other occupation worth mentioning is production, which showed up in the top 5 for 3 of our regions and was the most in-demand occupation for those regions.
+
+1. **Office and administrative support (all regions)**
+    + Northwest (#3)
+    + Northeast (#4)
+    + Central (#2)
+    + Seven County Metro (#1)
+    + Southwest (#3)
+    + Southeast (#3)
+2. **Sales and related (5 regions)**
+    + Northeast (#5)
+    + Central (#3)
+    + Seven County Metro (#3)
+    + Southwest (#5)
+    + Southeast (#2)
+3. **Healthcare Practitioners (4 regions)**
+    + Northwest (#2)
+    + Northeast (#1)
+    + Seven County Metro (#2)
+    + Southwest (#2)
+    + Southeast (#1)
+4. **Production (3 regions)**
+    + Northwest (#1)
+    + Central (#1)
+    + Southwest (#1)
+5. **Transportation and material moving (3 regions)**
+    + Northwest (#4)
+    + Central (#5)
+    + Southwest (#4)
+6. **Healthcare Support (3 regions)**
+    + Northwest (#5)
+    + Northeast (#3)
+    + Southeast (#5)
+7. **Food preparation and serving related (3 regions)**
+    + Northeast (#2)
+    + Central (#4)
+    + Southeast (#4)
+8. **Management (1 region)**
+    + Seven County Metro (#4)
+9. **Computer and Mathematical (1 region)**
+    + Seven County Metro
+
+When reviewing the rankings at the EDR level, there is even more variation in occupations that are in demand. There are 19 different occupations identified as a top-10 in demand occupation in at least one of the EDRs. When we filter that down to the top 5 there are 12 different occupations.
+
+Again, office and administrative support occupations are in the top 5 highet in demand in the highest number of our EDRs. Healthcare practitioners and technical occupations are also in a significant number of our EDRs (11).
+
+One occupation that's really interesting is production. It is a top-5 most in-demand occupation in 9 of our EDRs, and in all of them but one, is the most in-demand occupation for those regions. 
+
+1. **Office and administrative support (12 EDRs)**
+    + EDR 1 Northwest (#5)
+    + EDR 2 - Headwaters (#4)
+    + EDR 3 - Arrowhead (#4)
+    + EDR 4 - West Central (#2)
+    + EDR 5 - North Central (#4)
+    + EDR 6E - Southwest Central (#5)
+    + EDR 6W - Upper MN Valley (#5)
+    + EDR 7W - Central (#2)
+    + EDR 8 - Southwest (#2)
+    + EDR 9 - South Central (#4)
+    + EDR 10 - Southeast (#3)
+    + EDR 11 - 7 county metro (#1)
+2. **Healthcare Practitioners and Technical (11 EDRs)**
+    + EDR 1 Northwest (#4)
+    + EDR 2 - Headwaters (#2)
+    + EDR 3 - Arrowhead (#1)
+    + EDR 4 - West Central (#3)
+    + EDR 5 - North Central (#1)
+    + EDR 6W - Upper MN Valley (#4)
+    + EDR 7E - East Central (#2)
+    + EDR 8 - Southwest (#4)
+    + EDR 9 - South Central (#2)
+    + EDR 10 - Southeast (#1)
+    + EDR 11 - 7 county metro (#2)
+3. **Production (9 EDRs)**
+    + EDR 1 - Northwest (#1)
+    + EDR 4 - West Central (#1)
+    + EDR 5 - North Central (#3)
+    + EDR 6E - Southwest Central (#1)
+    + EDR 6W - Upper MN Valley (#1)
+    + EDR 7E - East Central (#1)
+    + EDR 7W - Central (#1)
+    + EDR 8 - Southwest (#1)
+    + EDR 9 - South Central (#1)
+4. **Sales and related (9 EDRs)**
+    + EDR 3 - Arrowhead (#5)
+    + EDR 4 - West Central (#5)
+    + EDR 5 - North Central (#5)
+    + EDR 6E - Southwest Central (#3)
+    + EDR 6W - Upper MN Valley (#2)
+    + EDR 7W - Central (#3)
+    + EDR 8 - Southwest (#5)
+    + EDR 10 - Southeast (#2)
+    + EDR 11 - 7 county metro (#3)
+5. **Transportation and material moving (7 EDRs)**
+    + EDR 1 - Northwest (#2)
+    + EDR 2 - Headwaters (#1)
+    + EDR 4 - West Central (#4)
+    + EDR 6E - Southwest Central (#4)
+    + EDR 7W - Central (#4)
+    + EDR 8 - Southwest (#3)
+    + EDR 9 - South Central (#5)
+6. **Food prep and serving related (7 EDRs)**
+    + EDR 1 - Northwest (#3)
+    + EDR 2 - Headwaters (#3)
+    + EDR 3 - Arrowhead (#2)
+    + EDR 7E - East Central (#5)
+    + EDR 7W - Central (#5)
+    + EDR 9 South Central (#3)
+    + EDR 10 - Southeast (#4)
+7. **Healthcare Support (4 EDRs)**
+    + EDR 2 - Headwaters (#5)
+    + EDR 3 - Arrowhead (#3)
+    + EDR 5 - North Central (#2)
+    + EDR 10 - Southeast (#5)
+8. **Farming, Fishing and Forestry (2 EDRs)**
+    + EDR 6E - Southwest Central (#2)
+    + EDR 6W - Upper MN Valley (#3)
+9. **Community and Social Service**
+    + EDR 7E - East Central (#4)
+10. **Management (1 EDR)**
+    + EDR 11 - 7 county metro
+11. **Mathematical (1 EDR)**
+    + EDR 11 - 7 county metro
+    
+
+
+```{r prep occupations in high demand, include=FALSE, cache=TRUE}
+job.postings.all.months.occ.pr <- master.job.postings.with.family %>%
+  mutate(Job_Family = as.factor(Job_Family)) %>%
+  group_by(planning.region) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions) %>%
+  group_by(planning.region, Job_Family) %>%
+  summarise(job.postings = n()) %>%
+  ungroup() %>%
+  group_by(planning.region) %>%
+  mutate(total.postings = sum(job.postings)) %>%
+  ungroup() %>%
+  mutate(job.postings.pct.total = job.postings / total.postings)
+
+job.postings.all.months.occ.top.10.pr <- job.postings.all.months.occ.pr %>%
+  group_by(planning.region) %>%
+  arrange(desc(job.postings.pct.total)) %>%
+  top_n(n = 10, job.postings.pct.total) %>%
+  ungroup() %>%
+  droplevels()
+
+levels(job.postings.all.months.occ.top.10.pr$Job_Family)
+
+job.postings.all.months.occ.edr <- master.job.postings.with.family %>%
+  mutate(Job_Family = as.factor(Job_Family)) %>%
+  group_by(edr, planning.region) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions) %>%
+  group_by(edr, planning.region, Job_Family) %>%
+  summarise(job.postings = n()) %>%
+  ungroup() %>%
+  group_by(edr, planning.region) %>%
+  mutate(total.postings = sum(job.postings)) %>%
+  ungroup() %>%
+  mutate(job.postings.pct.total = job.postings / total.postings)
+
+job.postings.all.months.occ.top.10.edr <- job.postings.all.months.occ.edr %>%
+  group_by(edr, planning.region) %>%
+  arrange(desc(job.postings.pct.total)) %>%
+  top_n(n = 10, job.postings.pct.total) %>%
+  ungroup() %>%
+  droplevels()
+
+levels(job.postings.all.months.occ.top.10.edr$Job_Family)
+
+```
+
+```{r prep table occupations in high demand, include=FALSE, cache=TRUE}
+occ.high.demand.table.pr <- job.postings.all.months.occ.top.10.pr %>%
+  group_by(planning.region) %>%
+  arrange(desc(job.postings.pct.total)) %>%
+  mutate(rank = (seq(n()))) %>%
+  ungroup() %>%
+  mutate(label = paste(Job_Family, ": ", percent(job.postings.pct.total, accuracy = .1), sep = "")) %>%
+  select(6,1,2,7) 
+
+names(occ.high.demand.table.pr)
+  
+top.5.pr <- job.postings.all.months.occ.top.10.pr %>%
+  group_by(planning.region) %>%
+  arrange(desc(job.postings.pct.total)) %>%
+  mutate(rank = (seq(n()))) %>%
+  ungroup() %>%
+  filter(rank < 6) %>%
+  droplevels()
+
+levels(top.5.pr$Job_Family)
+
+occ.high.demand.table.edr <- job.postings.all.months.occ.top.10.edr %>%
+  group_by(edr) %>%
+  arrange(desc(job.postings.pct.total)) %>%
+  mutate(rank = (seq(n()))) %>%
+  ungroup() %>%
+  mutate(label = paste(Job_Family, ": ", percent(job.postings.pct.total, accuracy = .1), sep = "")) %>%
+  select(7,1,3,8) %>%
+  filter(rank < 11)
+
+top.5.edr <- job.postings.all.months.occ.top.10.edr %>%
+  group_by(edr, planning.region) %>%
+  arrange(desc(job.postings.pct.total)) %>%
+  mutate(rank = (seq(n()))) %>%
+  ungroup() %>%
+  filter(rank < 6) %>%
+  droplevels()
+
+levels(top.5.edr$Job_Family)
+```
+
+<br>
+
+### Planning Region
+
+<br>
+
+```{r table occupations in high demand september pr}
+occ.high.demand.table.alpha.pr <- occ.high.demand.table.pr %>%
+  select(1,2,4) %>%
+  spread(key = planning.region, value = label)
+
+datatable(occ.high.demand.table.alpha.pr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+
+```
+
+### EDR
+
+
+<br>
+
+```{r table occupations in high demand september edr}
+occ.high.demand.table.alpha.edr <- occ.high.demand.table.edr %>%
+  select(1,2,4) %>%
+  spread(key = edr, value = label)
+
+datatable(occ.high.demand.table.alpha.edr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+
+```
+
+
+<br>
+
+
+
+## COVID-19 impacts on occupational demand{.tabset}
+
+The following data provides a comparison on the occupations that were in demand last year compared to occupations currently in demand.
+
+<br>
+
+```{r prep job vacancy occupation 2019 and 2020 comparison, include=FALSE, cache=TRUE}
+jv.occ.pct.total.2019.pr <- master.jv.pr %>%
+filter(periodname == "Fourth Quarter") %>%
+  group_by(planning.region, soclevel, soctitle) %>%
+  summarise(vacancies.mean = mean(vacancies, na.rm = TRUE)) %>%
+  ungroup() %>%
+  group_by(planning.region) %>%
+  mutate(vacancies.pct.total = vacancies.mean / vacancies.mean[soclevel == 0]) %>%
+  ungroup()
+
+jv.occ.pct.total.top.10.2019.pr <- jv.occ.pct.total.2019.pr %>%
+  filter(soclevel != 0) %>%
+  group_by(planning.region) %>%
+  arrange(desc(vacancies.pct.total)) %>%
+  top_n(n = 10, vacancies.pct.total) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  mutate(soctitle = str_replace(soctitle, " Occupations", ""),
+         soctitle = str_replace(soctitle, " Occu", ""),
+         soctitle = as.factor(soctitle))
+
+jv.occ.pct.total.top.10.2020.pr <- job.postings.all.months.occ.top.10.pr %>%
+  group_by(planning.region) %>%
+  arrange(desc(job.postings.pct.total)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  rename(Job_Family_2020 = 2,
+         job.postings.2020 = 3,
+         total.postings.2020 = 4,
+         job.postings.pct.total.2020 = 5) 
+
+jv.occ.top.10.2019.2020.pr <- jv.occ.pct.total.top.10.2019.pr %>%
+  left_join(jv.occ.pct.total.top.10.2020.pr, by = c("planning.region", "rank")) %>%
+  filter(planning.region != "Minnesota") %>%
+  rename(Job_Family_2019 = 3,
+         job.postings.2019 = 4,
+         job.postings.pct.total.2019 = 5) %>%
+  select(1,6,3,5,7,10) %>%
+  mutate(label.2019 = paste(Job_Family_2019, ", ", percent(job.postings.pct.total.2019, accuracy = .1), sep = ""),
+         label.2020 = paste(Job_Family_2020, ", ", percent(job.postings.pct.total.2020, accuracy = .1), sep = "")) %>%
+  gather(key = "year", value = "label", 7:8) %>%
+  mutate(year = str_sub(year, -4, -1),
+         year = as.integer(year),
+         data_id = seq(n()))
+  
+
+```
+
+### Planning Region
+
+<br>
+
+```{r job vacancy occupation 2019 and 2020 comparison pr}
+jv.occ.top.10.2019.2020.pr.plot <- ggplot(filter(jv.occ.top.10.2019.2020.pr, rank < 6), aes(year, rank, fill = as.factor(rank))) +
+  facet_wrap(~planning.region, ncol = 2) +
+  geom_label_interactive(size = 4, aes(label = label, data_id = data_id, tooltip = paste(planning.region, "\nIn demand rank: ", rank, "\nYear: ", year, "\n", label, sep = "")), show.legend = FALSE) +
+  labs(x="", y = "", color="", title = "Top 5 in demand occupations 2019 vs 2020")+
+  theme_bar+
+  scale_x_continuous(breaks = seq(2018, 2021, 1)) +
+  scale_fill_manual(values= brewer.pal(12, "RdYlBu"),
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+
+girafe(ggobj = jv.occ.top.10.2019.2020.pr.plot, width_svg = 15, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+
+```
+
+### EDR
+
+<br>
+
+# Occupations with labor shortages and surpluses
+
+Summary here
+
+<br>
+
+## Labor shortages
+
+The charts below provide a list of occupations that currently have labor shortages. This is defined as occupations that currently have more job postings than people filing UI claims within that occupation.
+
+1. Labor shortages table
+2. Number of occupations with labor shortages
+3. Top-5 occupations with largest average shortage
+
+<br>
+
+### Labor shortages by occupation and week - tables{.tabset}
+
+The tables below provide the specific occupations that experienced labor shortages each week and the number of workers they were short by when comparing the number of UI claims within that occupation.
+
+<br>
+
+```{r prep labor shortages, include=FALSE, cache=TRUE}
+ui.weekly.occ.pr <- ui.occ.pr %>%
+  gather(key = "ui.date", value = "ui.claims", 3:max(ncol(ui.occ.pr))) %>%
+  mutate(`Dim Title` = str_replace(`Dim Title`, " Occupations", ""),
+         `Dim Title` = str_replace(`Dim Title`, " Occup.", ""),
+         `Dim Title` = str_replace(`Dim Title`, " Occ", ""),
+         `Dim Title` = as.factor(`Dim Title`)) %>%
+  mutate(ui.date = mdy(ui.date),
+         ui.month = month(ui.date, label = TRUE)) %>%
+  group_by(planning.region, `Dim Title`, ui.month) %>%
+  mutate(week = seq(n())) %>%
+  ungroup()
+  
+
+job.postings.weekly.occ.pr <- master.job.postings.with.family %>%
+  group_by(planning.region, posting.date) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions) %>%
+  group_by(planning.region, posting.date, Job_Family) %>%
+  summarise(job.postings = n()) %>%
+  ungroup() %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(planning.region, Job_Family, posting.month) %>%
+  mutate(week = seq(n())) %>%
+  ungroup() %>%
+  mutate(Job_Family = str_replace(Job_Family, "Community and Social Service", "Community and Social Services"),
+         Job_Family = str_replace(Job_Family, "Building and Grounds Cleaning and Maintenance", "Building & Grounds Cleaning & Maintenance"),
+         Job_Family = as.factor(Job_Family))
+
+ui.job.postings.weekly.occ.pr <- ui.weekly.occ.pr %>%
+  group_by(planning.region, ui.date, ui.month, week) %>%
+  complete(`Dim Title`, fill = list(ui.claims = 0)) %>%
+  ungroup() %>%
+  left_join(job.postings.weekly.occ.pr[,c(1,3,4,5,6)], by = c("planning.region", "ui.month" = "posting.month", "week", `Dim Title` = "Job_Family")) %>%
+  filter(ui.month %in% c("Sep", "Oct", "Nov"),
+         `Dim Title` != "Total Claims",
+         planning.region != "Minnesota") %>%
+  mutate(job.posting.ui.difference = job.postings - ui.claims,
+         shortage.surplus = ifelse(job.posting.ui.difference >= 0, "Shortage", "Surplus"),
+         shortage.surplus = as.factor(shortage.surplus))
+
+labor.shortage.pr <- ui.job.postings.weekly.occ.pr %>%
+  filter(shortage.surplus == "Shortage")
+
+ui.weekly.occ.edr <- ui.occ.edr %>%
+  gather(key = "ui.date", value = "ui.claims", 3:(max(ncol(ui.occ.edr))-1)) %>%
+  mutate(`Dim Title` = str_replace(`Dim Title`, " Occupations", ""),
+         `Dim Title` = str_replace(`Dim Title`, " Occup.", ""),
+         `Dim Title` = str_replace(`Dim Title`, " Occ", ""),
+         `Dim Title` = as.factor(`Dim Title`)) %>%
+  mutate(ui.date = mdy(ui.date),
+         ui.month = month(ui.date, label = TRUE)) %>%
+  group_by(edr, planning.region, `Dim Title`, ui.month) %>%
+  mutate(week = seq(n())) %>%
+  ungroup()
+  
+job.postings.weekly.occ.edr <- master.job.postings.with.family %>%
+  group_by(edr, planning.region, posting.date) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions) %>%
+  group_by(edr, planning.region, posting.date, Job_Family) %>%
+  summarise(job.postings = n()) %>%
+  ungroup() %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(edr, planning.region, Job_Family, posting.month) %>%
+  mutate(week = seq(n())) %>%
+  ungroup() %>%
+  mutate(Job_Family = str_replace(Job_Family, "Community and Social Service", "Community and Social Services"),
+         Job_Family = str_replace(Job_Family, "Building and Grounds Cleaning and Maintenance", "Building & Grounds Cleaning & Maintenance"),
+         Job_Family = as.factor(Job_Family))
+
+ui.job.postings.weekly.occ.edr <- ui.weekly.occ.edr %>%
+  group_by(edr, planning.region, ui.date, ui.month, week) %>%
+  complete(`Dim Title`, fill = list(ui.claims = 0)) %>%
+  ungroup() %>%
+  left_join(job.postings.weekly.occ.edr[,c(1,2,3,4,5,6,7)], by = c("edr", "planning.region", "ui.month" = "posting.month", "week", `Dim Title` = "Job_Family")) %>%
+  filter(ui.month %in% c("Sep", "Oct", "Nov"),
+         `Dim Title` != "Total Claims",
+         edr != "Minnesota") %>%
+  mutate(job.posting.ui.difference = job.postings - ui.claims,
+         shortage.surplus = ifelse(job.posting.ui.difference >= 0, "Shortage", "Surplus"),
+         shortage.surplus = as.factor(shortage.surplus))
+
+labor.shortage.edr <- ui.job.postings.weekly.occ.edr %>%
+  filter(shortage.surplus == "Shortage")
+
+
+```
+
+#### Planning Region
+
+<br>
+
+```{r table labor shoratges pr}
+labor.shortage.table.pr <- labor.shortage.pr %>%
+  select(1,5,3,4,8) %>%
+  arrange(planning.region,ui.month, week, desc(job.posting.ui.difference)) %>%
+  rename(`Planning Region` = 1,
+         "Occupation" = 2,
+         "Month" = 3,
+         "Week of month" = 4,
+         "Labor shortage" = 5) 
+
+datatable(labor.shortage.table.pr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE))
+
+```
+
+#### EDR
+
+<br>
+
+```{r table labor shoratges edr}
+labor.shortage.table.edr <- labor.shortage.edr %>%
+  select(1,6,4,5,10) %>%
+  arrange(edr, ui.month, week, desc(job.posting.ui.difference)) %>%
+  rename("EDR" = 1,
+         "Occupation" = 2,
+         "Month" = 3,
+         "Week of month" = 4,
+         "Labor shortage" = 5) 
+
+datatable(labor.shortage.table.edr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE))
+
+```
+
+<br>
+
+### Number of occupations with labor shortages each week{.tabset}
+
+The charts below provide the number of occupations that have labor shortages each week. 
+
+The charts indicate that most regions are experiencing an increasing number of occupations with labor shortages. The Southwest region started with 6 occupations experiencing labor shortages at the beginning of September and by week 4 of October had 13 occupations. Southeast has experienced the largest increase in the number of occupations experiencing labor shortages going from 4 at the beginning of September to 12 by the end of October. The only region that hasn't really experienced an increase is Central Minnesota where they had 4 occupations experiencing a labor shortage at the beginning of September and continues to have that same number through October.
+
+When looking at the changes by EDR, it's also clear that some of the most significant change, and the areas with the largest number of occupations experiencing labor shortages exist in Southern Minnesota. In the Southwest region, EDR 9 - South Central and EDR 8 - Southwest are driving the change in the numbers. Interestingly, when breaking down Central Minnesota planning region, there are EDRs that are experiencing shortages even though at a planning region level it didn't seem that way. EDR 6E in particular is experiencing an increase in the number of occupations.
+
+As we move further North, the regions located closer to the west side of the state have the largest number of occupations experiencing a labor shortage.
+
+
+
+<br>
+
+```{r prep number of occupations with shortages each week, include=FALSE, cache=TRUE}
+labor.shortages.occ.number.pr <- labor.shortage.pr %>%
+  group_by(planning.region, ui.month, week) %>%
+  summarise(number.occ.shortages = n()) %>%
+  ungroup() %>% 
+  mutate(date = paste("2020/", ui.month, "/", week, sep = ""),
+         date = ymd(date),
+         data_id = seq(n())) 
+
+labor.shortages.occ.number.edr <- labor.shortage.edr %>%
+  group_by(edr, planning.region, ui.month, week) %>%
+  summarise(number.occ.shortages = n()) %>%
+  ungroup() %>% 
+  mutate(date = paste("2020/", ui.month, "/", week, sep = ""),
+         date = ymd(date),
+         data_id = seq(n()))
+
+```
+
+#### Planning Region
+
+<br>
+
+```{r chart number of occupations with shortages each week pr}
+labor.shortages.occ.number.pr.plot <- ggplot(labor.shortages.occ.number.pr, aes(week, number.occ.shortages, color = planning.region)) +
+  facet_wrap(~ui.month, ncol = 2) +
+  geom_line(size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(planning.region, "\nYear: ", "2020", "\nMonth: ", ui.month, "\nWeek number of month: ", week, "\nNumber of occupations with a labor shortage: ", comma(number.occ.shortages), sep = ""))) +
+  labs(x="", y = "", color="", title = "Number of occupations with labor shortages each week")+
+  scale_y_continuous(labels=scales::comma)+
+  theme_line+
+  scale_color_manual(values= color.pr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = labor.shortages.occ.number.pr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+#### EDR
+
+<br>
+
+```{r chart number of occupations with shortages each week edr}
+labor.shortages.occ.number.edr.plot <- ggplot(labor.shortages.occ.number.edr, aes(week, number.occ.shortages, color = edr)) +
+  facet_grid(planning.region ~ ui.month) +
+  geom_line(size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(edr, "\nYear: ", "2020", "\nMonth: ", ui.month, "\nWeek number of month: ", week, "\nNumber of occupations with a labor shortage: ", comma(number.occ.shortages), sep = ""))) +
+  labs(x="", y = "", color="", title = "Number of occupations with labor shortages each week")+
+  scale_y_continuous(labels=scales::comma)+
+  theme_line+
+  scale_color_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = labor.shortages.occ.number.edr.plot, width_svg = 10, height_svg = 20) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+<br>
+
+### Top occupations with labor shortages{.tabset}
+
+Since the number of occupations experiencing a labor shortage is increase, the tables below provide the occupations  with labor shortages in the most recent week of data. The narratives below provides an overview of the tables, as well as a comparison to the "in-demand" occupations from the previous section. This is important because it will tell us which "in-demand" occupations have plenty of people collecting unemployment claims while other occupations legitimately don't have people to take the positions.
+
+
+<br>
+
+```{r prep top occupations with labor shortages, include=FALSE, cache=TRUE}
+labor.shortages.top.occ.pr <- labor.shortage.pr %>%
+  filter(ui.date == max(labor.shortage.pr$ui.date),
+         planning.region != "Minnesota") %>%
+  group_by(planning.region) %>%
+  arrange(desc(job.posting.ui.difference)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  select(1,5,8,10) %>%
+  complete(planning.region, rank, fill = list(`Dim Title` = "", "job.posting.ui.difference" = "")) %>%
+  mutate(`Dim Title` = ifelse(is.na(`Dim Title`), "", as.character(`Dim Title`))) %>%
+  mutate(label = paste(`Dim Title`, " - ", job.posting.ui.difference, sep = "")) %>%
+  select(1,2,5) %>%
+  spread(key = planning.region, value = label)
+
+labor.shortages.top.occ.edr <- labor.shortage.edr %>%
+  filter(ui.date == max(labor.shortage.pr$ui.date)) %>%
+  group_by(edr) %>%
+  arrange(desc(job.posting.ui.difference)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  select(1,6,10,12) %>%
+  complete(edr, rank, fill = list(`Dim Title` = "", "job.posting.ui.difference" = "")) %>%
+  mutate(`Dim Title` = ifelse(is.na(`Dim Title`), "", as.character(`Dim Title`))) %>%
+  mutate(label = paste(`Dim Title`, " - ", job.posting.ui.difference, sep = "")) %>%
+  select(1,2,5) %>%
+  spread(key = edr, value = label)
+```
+
+#### Planning Region
+
+**Northwest** 
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + production (#1)
+    + healthcare practitioners and technical (#2)
+    + office and administrative (#3)
+    + transportation and material moving (#4)
+    + community and social services (#8)
+    + personal care and service (#9). 
+
+* Top 10 in-demand and facing a workforce surplus
+    + healthcare support (#5)
+    + sales and related (#6)
+    + food preparation and serving related (#7).
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+  + Architecture and engineering
+  + Installation, maintenance and repair
+  + life, physical and social science
+    
+**Northeast** 
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + healthcare practitioners and technical (#1)
+    + management (#6)
+    + community and social services (#7)
+    + personal care and service (#9)
+    
+  
+* Top 10 in-demand and facing a workforce surplus
+    + food preparation and serving related (#2)
+    + healthcare support (#3)
+    + office and administrative support (#4)
+    + sales and related (#5)
+    + production (#8)
+    + transportation and material moving (#10)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + Business and financial operations
+    + Computer and mathematical
+    + Architecture and engineering
+    + life, physical and social science
+    
+**Central**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + transportation and material moving (#5)
+    + healthcare practitioners and technical (#6)
+    + community and social services (#7)
+    
+  
+* Top 10 in-demand and facing a workforce surplus
+    + production (#1)
+    + office and administrative support (#2)
+    + sales and related (#3)
+    + food preparation and serving related (#4)
+    + healthcare support (#8)
+    + personal care and service (#9)
+    + management (#10)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + Farming, fishing and forestry
+    + life, physical and social science
+    
+**Seven county metro**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + healthcare practitioners and technical (#2)
+    + computer and mathematical (#5)
+    + business and financial operations (#6)
+    
+  
+* Top 10 in-demand and facing a workforce surplus
+    + office and administrative support (#1)
+    + sales and related (#3)
+    + food preparation and serving related (#8)
+    + management (#4)
+    + healthcare support (#7)
+    + production (#9)
+    + transportation and material moving (#10)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + Community and social services
+    + architecture and engineering
+    + life, physical, and social science
+    + installation, maintenance and repair
+    
+**Southwest**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + production (#1) 
+    + healthcare practitioners and technical (#2)
+    + office and administrative support (#3)
+    + transportation and material moving (#4)
+    + sales and related (#5)
+    + farming, fishing and forestry (#8)
+    + management (#9)
+    + installation, maitenance and repair (#10)
+  
+* Top 10 in-demand and facing a workforce surplus
+    + food preparation and serving related (#6)
+    + healthcare support (#7)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + computer and mathematical
+    + community and social services
+    + personal care and service
+    + life, physical and social science
+    + business and financial operations
+    + architecture and engineering
+    + legal
+
+**Southeast**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + healthcare practitioners and technical (#1)
+    + sales and related (#2)
+    + office and administrative support (#3)
+    + healthcare support (#5)
+    + computer and mathematical (#10)
+    
+* Top 10 in-demand and facing a workforce surplus
+    + food preparation and serving related (#4)
+    + production (#6)
+    + transportation and material moving (#7)
+    + management (#8)
+    + construction and extraction (#9)
+
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + community and social services
+    + life, physical and social science
+    + personal care and service
+    + architecture and engineering
+    + arts, design, entertainment, sports and media
+    + business and financial operations
+<br>
+
+```{r table top occupations with labor shortages pr}
+datatable(labor.shortages.top.occ.pr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+
+```
+
+#### EDR
+
+<br>
+
+**EDR 1 - Northwest**
+
+* Top 10 "in-demand" and facing a labor force shortage (8)
+    + production (#1)
+    + transportation and material moving (#2)
+    + healthcare practitioners and technical (#4)
+    + office and admin support (#5)
+    + healthcare support (#6)
+    + personal care and service (#7)
+    + community and social service (#9)
+    + installation, maintenance and repair (#10)
+
+    
+* Top 10 in-demand and facing a workforce surplus
+    + food prep and serving related (#3)
+    + sales and related (#8)
+
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + architecture and engineering
+    + business and financial operations
+    + arts, design, entertainment and media
+    + computer and mathematical
+    + protective service
+
+**EDR 2 - Headwaters**
+
+* Top 10 "in-demand" and facing a labor force shortage (8)
+    + transportation and material moving (#1)
+    + healthcare practitioners and technical (#2)
+    + office and admin support (#4)
+    + community and social services (#8)
+    + management (#10)
+
+    
+* Top 10 in-demand and facing a workforce surplus
+    + food preparation and serving related (#3)
+    + healthcare support (#5)
+    + sales and related (#6)
+    + production (#7)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + installation, maintenance and repair
+
+**EDR 3 - Arrowhead**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + healthcare practitioners and technical (#1)
+    + management (#6)
+    + community and social services (#7)
+    + personal care and service (#9)
+    
+  
+* Top 10 in-demand and facing a workforce surplus
+    + food preparation and serving related (#2)
+    + healthcare support (#3)
+    + office and administrative support (#4)
+    + sales and related (#5)
+    + production (#8)
+    + transportation and material moving (#10)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + life, physical and social science
+    + Business and financial operations
+    + Computer and mathematical
+    + Architecture and engineering
+
+    
+**EDR 4 - West Central**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + production (#1)
+    + office and admin support (#2)
+    + healthcare practitioners and technical (#3)
+    + transportation and material moving (#4)
+    + sales and related (#5)
+    + community and social services (#9)
+    + installation and maintenance repair (#10)
+  
+* Top 10 in-demand and facing a workforce surplus
+    + food prep and serving related (#6)
+    + healthcare support (#7)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + farming, fishing and forestry
+    + architecture and engineering
+    + protective service
+    + life, physical and social science
+    + legal
+    
+**EDR 5 - North Central**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + healthcare practitioners and technical (#1)
+    + community and social services (#7)
+    + personal care and service (#9)
+  
+* Top 10 in-demand and facing a workforce surplus
+    + healthcare support (#2)
+    + production (#3)
+    + office and admin support (#4)
+    + sales and related (#5)
+    + food prep and serving related (#6)
+    + transportation and material moving (#8)
+    + buildings grounds and cleaning and maintenance (#10)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + life, physical and social science
+    + protective service
+    + Architecture and engineering
+    
+**EDR 6E - Southwest Central**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + production (#1)
+    + farming, fishing and forestry (#2)
+    + sales and related (#3)
+    + transportation and material moving (#4)
+    + healthcare practitioners and technical (#6) 
+    + community and social services (#8)
+    + personal care and service (#9)
+  
+* Top 10 in-demand and facing a workforce surplus
+    + office and admin support (#5)
+    + food prep and serving related (#7)
+    + healthcare support (#10)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + life, physical and social science
+    + installation, maintenance and repair
+    
+**EDR 6W - Upper Minnesota Valley**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + farming, fishing and forestry (#3)
+    + healthcare practitioners and technical (#4)
+    + office and admin support (#5)
+    + transportation and material moving (#6)
+    + installation, maintenance and repair (#7)
+    + architecture and engineering (#9)
+    + community and social services (#10)
+    
+  
+* Top 10 in-demand and facing a workforce surplus
+    + production (#1)
+    + sales and related (#2)
+    + healthcare support (#8)
+
+* Occupations with workforce shortage but not a top-10 in-demand
+    + buildings, grounds cleaning and maintenance
+    + life, physical and social science
+    
+**EDR 7E - East Central**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + production (#1)
+    + healthcare practitioners and technical (#2)
+    + community and social services (#4)
+    
+  
+* Top 10 in-demand and facing a workforce surplus
+    + healthcare support (#3)
+    + food prep and serving related (#5)
+    + office and admin support (#6)
+    + sales and related (#7)
+    + personal care and service (#8)
+    + management (#9)
+    + transportation and material moving (#10)
+
+* Occupations with workforce shortage but not a top-10 in-demand
+    + architecture and engineering 
+
+**EDR 7W - Central**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + office and admin support (#2)
+    + sales and related (#3)
+    + transportation and material moving (#4)
+    + healthcare practitioners and technical (#6)
+    + community and social services (#7)
+    
+* Top 10 in-demand and facing a workforce surplus
+    + production (#1)
+    + food prep and serving related (#5)
+    + healthcare support (#8)
+    + personal care and service (#9)
+    + education, training and library (#10)
+
+* Occupations with workforce shortage but not a top-10 in-demand
+    + life, physical and social science
+    + protective service
+    
+**EDR 8 - Southwest**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + production (#1)
+    + office and admin support (#2)
+    + transportation and material moving (#3)
+    + healthcare practitioners and technical (#4)
+    + sales and related (#5)
+    + personal care and service (#6)
+    + installation, maintenance and repair (#7)
+    + healthcare support (#10)
+    
+* Top 10 in-demand and facing a workforce surplus
+    + food prep and serving related (#8)
+    + farming, fishing and forestry (#9)
+
+* Occupations with workforce shortage but not a top-10 in-demand
+    + business and financial operations
+    + management
+    + community and social services
+    + computer and mathematical
+    + life, physical and social science
+    + arts, design, entertainment and media
+    
+**EDR 9 - South Central**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + production (#1)
+    + healthcare practitioners and technical (#2)
+    + transportation and material moving (#5)
+    + farming, fishing and forestry (#8)
+    + computer and mathematical (#9)
+    + management (#10)
+    
+* Top 10 in-demand and facing a workforce surplus
+    + food prep and serving related (#3)
+    + office and admin support (#4)
+    + sales and related (#6)
+    + healthcare support (#7)
+
+* Occupations with workforce shortage but not a top-10 in-demand
+    + community and social services
+    + installation, maintenance and repairt
+    + life, physical and social science
+    + architecture and engineering
+    + personal care and service
+    + education, training and library
+    + legal
+    + business and financial operations
+    + protective service
+
+**EDR 10 - Southeast**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + healthcare practitioners and technical (#1)
+    + sales and related (#2)
+    + office and admin support (#3)
+    + healthcare support (#5)
+    + computer and mathematical (#10)
+  
+* Top 10 in-demand and facing a workforce surplus
+    + food prep and serving related (#4)
+    + production (#6)
+    + transportation and material moving (#7)
+    + management (#8)
+    + construction and extraction (#9)
+
+* Occupations with workforce shortage but not a top-10 in-demand
+    + community and social services
+    + life, physical and social science
+    + personal care and service
+    + architecture and engineering
+    + arts, design, entertainment and media
+    + business and financial operations
+
+**EDR 11 - Seven County Metro**
+
+* Top 10 "in-demand" and facing a labor force shortage
+    + healthcare practitioners and technical (#2)
+    + computer and mathematical (#5)
+    + business and financial operations (#6)
+    
+  
+* Top 10 in-demand and facing a workforce surplus
+    + office and administrative support (#1)
+    + sales and related (#3)
+    + food preparation and serving related (#8)
+    + management (#4)
+    + healthcare support (#7)
+    + production (#9)
+    + transportation and material moving (#10)
+    
+* Occupations with workforce shortage but not a top-10 in-demand
+    + Community and social services
+    + architecture and engineering
+    + life, physical, and social science
+    + installation, maintenance and repair
+    +
+
+
+```{r table top occupations with labor shortages edr}
+datatable(labor.shortages.top.occ.edr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+
+```
+
+
+
+
+
+

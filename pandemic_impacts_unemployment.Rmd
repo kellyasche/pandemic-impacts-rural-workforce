@@ -1,0 +1,450 @@
+---
+title: "Pandemic impacts on unemployment"
+author: "Kelly Asche"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+runtime: shiny
+resource_files:
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.cpg
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.dbf
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.prj
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.sbn
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.sbx
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.shp.xml
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.shx
+---
+
+<link rel="stylesheet" href="styles.css" type="text/css">
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(sf)
+library(ggrepel)
+library(scales)
+library(shiny)
+library(shinycssloaders)
+library(ggiraph)
+library(kableExtra)
+library(rmapshaper)
+library(cowplot)
+library(DT)
+library(htmlwidgets)
+library(RColorBrewer)
+library(extrafont)
+library(readxl)
+library(janitor)
+library(lubridate)
+
+loadfonts()
+```
+
+```{r loading jon docs and shapefiles, cache=TRUE, include=FALSE}
+theme_bar <- theme_bw() +
+  theme(panel.grid.major = element_line(color = "grey70", size = 0.1),
+        panel.grid.minor = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_text(face = "bold"),
+        panel.border = element_blank(),
+        legend.background = element_rect(fill = "transparent", color = "transparent"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.key.size = unit(1, "lines"),
+        legend.margin = margin(0,0,0,0),
+        legend.title = element_blank(),
+        legend.text = element_text(margin = margin(l = 2)),
+        text = element_text(family = "Arial"))
+
+theme_line <- theme_bw() +
+  theme(legend.background = element_rect(fill = "transparent", color = "transparent"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.text = element_text(margin = margin(l = 2)),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey70", size = 0.1),
+        axis.ticks = element_blank(),
+        axis.text = element_text(face = "bold"),
+        panel.border = element_blank(),
+        legend.margin = margin(0,0,0,0),
+        legend.key.size = unit(1, "lines"),
+        text = element_text(family = "Arial"))
+
+
+theme_sf <- theme_bw() +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_blank(),
+        panel.grid.major = element_line(color = "white"),
+        panel.border = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        legend.title = element_blank(),
+        legend.text = element_text(margin = margin(l = 2)),
+        legend.margin = margin(0,0,0,0),
+        legend.key.size = unit(1, "lines"),
+        text = element_text(family = "Arial"))
+
+regions <- read_csv("Data/Join docs/county_regions.csv") %>%
+    select(5,6) %>%
+    unique() %>%
+    mutate(edr = str_replace(edr, "  ", " "),
+           planning.region = str_replace(planning.region, " Minnesota", ""),
+           planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+           edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+counties.regions <- read_csv("Data/Join docs/county_regions.csv") %>%
+  mutate(countyfp = formatC(countyfp, width = 3, flag = "0"),
+         Name = str_to_title(Name),
+         Name = str_replace(Name, "Q", "q"),
+         Name = str_replace(Name, "Of The", "of the"),
+         Name = str_replace(Name, "Mcleod", "McLeod"),
+         Dem_Desc = ifelse(Name == "Minnesota", "Minnesota", Dem_Desc) ,
+         edr = str_replace(edr, "  ", " "),
+         planning.region = str_replace(planning.region, " Minnesota", ""),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+color.ruca <- c("Entirely rural" = "#009933", "Town/rural mix" = "#99CC33", "Urban/town/rural mix" = "#CC9966", "Entirely urban" = "#754C29", "Minnesota" = "black")
+
+color.pr <- c("Northwest" = 	"#4575b4", "Northeast" = "#e0f3f8", "Central" = "#fee090", "Seven County Mpls-St Paul" = "#d73027", "Southwest" = "#91bfdb", "Southeast" = "#fc8d59", "Minnesota" = "black")
+
+color.edr <- c("EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6", "EDR 3 - Arrowhead" = "#fe9929", "EDR 4 - West Central" = "#8856a7", "EDR 5 - North Central" = "#810f7c", "EDR 6E- Southwest Central" = "#e5f5f9", "EDR 6W- Upper Minnesota Valley" = "#bdc9e1", "EDR 7E- East Central" = "#99d8c9", "EDR 7W- Central" = "#2ca25f", "EDR 8 - Southwest" = "#74a9cf", "EDR 9 - South Central" = "#0570b0", "EDR 10 - Southeast" = "#d7301f", "EDR 11 - 7 County Twin Cities" = "#d8b365", "Minnesota" = "black")
+
+color.pr.edr <- c ("Northwest" = "#4575b4","Northeast" = "#e0f3f8", "Central" = "#fee090", "Seven County Mpls-St Paul" = "#d73027", "Southwest" = "#91bfdb", "Southeast" = "#fc8d59", "Minnesota" = "black", "EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6", "EDR 3 - Arrowhead" = "#fe9929", "EDR 4 - West Central" = "#8856a7", "EDR 5 - North Central" = "#810f7c", "EDR 6E- Southwest Central" = "#e5f5f9", "EDR 6W- Upper Minnesota Valley" = "#bdc9e1", "EDR 7E- East Central" = "#99d8c9", "EDR 7W- Central" = "#2ca25f", "EDR 8 - Southwest" = "#74a9cf", "EDR 9 - South Central" = "#0570b0", "EDR 10 - Southeast" = "#d7301f", "EDR 11 - 7 County Twin Cities" = "#d8b365")
+
+color.six <- c("#009933", "#4575b4", "grey", "#fee090", "#fc8d59", "#d73027")
+
+```
+
+```{r shapefiles, include=FALSE, cache=TRUE}
+edr_bound <- st_read("Data/Shapefiles/RDO shapefiles/rdo.shp", quiet = TRUE)
+
+pr_bound <- st_read("Data/Shapefiles/planning region shapefiles/PlanningRegion_2006.shp", quiet = TRUE) %>%
+  mutate(PlanningRe = str_replace(PlanningRe, "Metro", "Seven County Mpls-St Paul"))
+```
+
+
+```{r master ui objects, include=FALSE, cache=TRUE}
+ui.county <- read_csv("Data/UI/Master-ui-claims-total-county.csv")
+
+ui.edr <- read_csv("Data/UI/Master-ui-claims-total-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota")) %>%
+  left_join(regions, by = "edr") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+ui.pr <- read_csv("Data/UI/Master-ui-claims-total-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+ui.occ.edr <- read_csv("Data/UI/Master-ui-claims-occ-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast")) 
+
+ui.occ.pr <- read_csv("Data/UI/Master-ui-claims-occ-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast")) 
+
+```
+
+```{r master oes objects, include=FALSE, cache=TRUE}
+
+oes.edr <- read_csv("Data/Occupations/OES/Master-oes-edr.csv") %>%
+   mutate(edr = str_replace(edr, "  ", " "),
+          edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota")) %>%
+  left_join(regions, by = "edr") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+oes.pr <- read_csv("Data/Occupations/OES/Master-oes-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+```
+
+
+
+<br>
+
+# Unemployment trends{.tabset}
+
+The following charts provide the total number of weekly continuous unemployment insurance claims as a percentage of the average 2019 employment (Bureau of Labor Statistics - Occupational Employment Statistics).
+
+Although the overall trajectories of unemployment are similar across all of Minnesota with peaks in unemployment occurring in April and declining since then, there is considerable variation in the severity across EDRs. The highest number of weekly continuous unemployment insurance claims as a percentage of the total 2019 workforce exist in northern and central Minnesota.
+
+The hardest hit region of the state is EDR 7E - East Central (Central) where at the peak of unemployment had their weekly number of continuous unemployment insurance claims reach nearly 30% of their average number of workers in 2019. They also continue to have the highest percentage with weekly unemployment claims equaling nearly 6% of their 2019 workforce.
+
+The other regions that were hit harder than others are in northern Minnesota. EDR 2 - Headwaters, EDR 5 - North Central and EDR 3 - Arrowhead had unemployment claims that were nearly 20% of their 2019 workforce numbers during the month of April, while the EDRs to the west and south of them peaked closer to 10%. These EDRs also continue to have higher percentages with weekly continuous unemployment claims being around 3.5% to 4.0% of their 2019 workforce.
+
+EDRs in southwest Minnesota have gone through the pandemic with the least amount of disruption in terms of unemployment. Although EDR 9 - South Central was hit relatively hard during the peak of unemployment, the other EDRs didn't have weekly continuous unemployment claims that were 10% of their 2019 workforce. In fact, the EDR with the lowest percentage in the state exists in this region - EDR 6W - Upper Minnesota Valley had weekly unemployment claims that were just over 1% of their 2019 workforce by the end of October. 
+
+Unemployment trends in Southeast Minnesota were a little different in that unemployment claims peaked a bit later. This was likely due to the layoffs in healthcare which occurred later than other industries. 
+
+<br>
+
+```{r prep ui pct emp, include=FALSE, cache=TRUE}
+emp.edr <- oes.edr %>%
+  filter(SocLevel == 0) %>%
+  select(1,7)
+
+ui.oes.edr <- ui.edr %>%
+  gather(key = "date", value = "ui.claims", 3:(ncol(ui.edr)-1)) %>%
+  left_join(emp.edr, by = "edr")  %>%
+  mutate(ui.claims = as.integer(ui.claims),
+         ui.pct.empCount = ui.claims/EmpCount,
+         date = as_date(date, format = "%m/%d/%Y"))%>%
+  drop_na(date)
+
+ui.oes.map.edr <- ui.oes.edr %>%
+  filter(date == max(date)) %>%
+  mutate(RDCNUM = str_sub(edr, 5,6),
+         RDCNUM = trimws(RDCNUM, which = "both")) %>%
+  left_join(edr_bound[,c(5,10)], by = "RDCNUM")
+
+```
+
+## EDR - trends
+
+<br>
+
+```{r ui pct emp trends edr}
+ui.pct.emp.edr.plot <- ggplot(ui.oes.edr, aes(date, ui.pct.empCount, color = edr)) +
+  facet_wrap(~planning.region, ncol = 2)+
+  geom_hline(yintercept = 0, color = "black") +
+  geom_smooth(se = FALSE, size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = ui.pct.empCount, tooltip = paste(edr, "\nDate: ", date, "\nTotal employment in 2020: ", comma(EmpCount), "\nTotal unemployment continued claims: ", comma(ui.claims), "\nUnemployment claims as pct of total employment: ", percent(ui.pct.empCount), sep = ""))) +
+  geom_label_repel(data = filter(ui.oes.edr, date == max(ui.oes.edr$date)), aes(date, ui.pct.empCount, label = percent(ui.pct.empCount)), show.legend = FALSE, size = 5) +
+  labs(x="", y = "", color="", title = "Unemployment claims as a percent of total employment")+
+  scale_y_continuous(labels=scales::percent)+
+  scale_x_date(date_breaks = "1 month")+
+  theme_line+
+  scale_color_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        text = element_text(size = 18))
+
+girafe(ggobj = ui.pct.emp.edr.plot, height_svg = 10, width_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+
+
+```
+
+## EDR - map
+
+<br>
+
+```{r map ui pct emp edr}
+ui.pct.emp.edr.map <- ggplot(ui.oes.map.edr) +
+  geom_sf_interactive(color = "grey85", aes(geometry = geometry, fill = ui.pct.empCount, data_id = edr, tooltip = paste(edr, "\nDate: ", date, "\nTotal unemployment claims: ", comma(ui.claims), "\nTotal employment: ", comma(EmpCount), "\nUnemployment as a % of employment: ", percent(ui.pct.empCount), sep = ""))) +
+  theme_sf+
+  scale_fill_fermenter(palette = "PuBu", direction = 1, labels = scales::percent) +
+  labs(title = paste("Weekly continuous unemployment insurance claims as a % of employment,\n", max(ui.oes.map.edr$date))) +
+  theme(legend.box.margin = margin(50, 0, 0, -100),
+        text = element_text(size = 18))
+
+girafe(ggobj = ui.pct.emp.edr.map, height_svg = 10, width_svg = 10) %>%
+  girafe_options(opts_sizing(rescale = FALSE))
+
+```
+
+## EDR - table
+
+```{r table ui pct emp edr}
+ui.oes.table.edr <- ui.oes.edr %>%
+  select(1,3,4,5,6,7) %>%
+  rename("EDR" = 1,
+         "Planning Region" = 2,
+         "Weekly UI claims date" = 3,
+         "Number of weekly UI claims" = 4,
+         "2019 employment" = 5,
+         "UI claims as % of 2019 employment" = 6)
+
+datatable(ui.oes.table.edr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) %>%
+  formatCurrency(4:5, "") %>%
+  formatPercentage(6)
+
+```
+
+<br>
+
+# Most impacted occupation groups{.tabset}
+
+The top-5 occupation groups with the highest unemployment claims charts below provides the occupation groups that had the top-5 highest average weekly continuous unemployment claims each month March - October. Since the impacts of the pandemic has been unevenly distributed across the various occupational groups, it's important to see which ones were hit hardest each month. For example, healthcare related occupations were hit hard for a few months in early summer and then unemployment claims dropped significant after that.
+
+An analysis of continuous unemployment insurance claims by occupation shows that occupations in the food preparation and serving related, sales related, and office and administrative support fields were impacted the most by the pandemic and nearly to the same degree across all regions of Minnesota. After that occupation group, occupations that fall under the sales related and, office and administrative support are typically found to have the top-5 highest number of individuals filing for continuous unemployment insurance claims across nearly all regions of Minnesota. 
+
+Although production occupations can be seasonal in nature, a few regions have seen a consistently high number of unemployment claims from individuals in this occupation group throughout the entire year. In particular, regions that have a high reliance in these related industries in Southwest, Central, and the corner of Northwest Minnesota. The same can also be said for occupations in the construction and extraction field, particularly in regions within the Central Minnesota planning region.
+
+It's important to note that there are a number of occupations that have high unemployment claims in the late-winter and early spring due to the seasonal nature of the related industries. The high unemployment claims in construction and extraction, transportation and material moving, production, and farming, fishing and forestry from March through April can be attributed to individuals in those occupations receiving unemployment during the winter.
+
+Healthcare support and healthcare practitioners and technical tend to appear with a large number of unemployment claims during the early summer when healthcare providers had to issue layoffs due to the lack of revenue to sustain their salaries. The numbers have decreased since that time period.
+
+<br>
+
+```{r prep ui claims and emp by occ, include=FALSE, cache=TRUE}
+ui.emp.occ.edr <- ui.occ.edr %>%
+  gather(key = "date", value = "ui.claims", 3:(ncol(ui.occ.edr)-1)) %>%
+  mutate(date = as_date(date, format = "%m/%d/%Y"),
+         ui.claims = ifelse(is.na(ui.claims), 0, ui.claims),
+         `Dim Title` = str_replace(`Dim Title`, "Arts, Design, Entertainment, Sports, and Media Occ", "Arts, Design, Entertainment, Sports, and Media Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Building & Grounds Cleaning & Maintenance Occup.", "Building and Grounds Cleaning and Maintenance Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Community and Social Services Occupations", "Community and Social Service Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Education, Training, and Library Occupations", "Educational Instruction and Library Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Total Claims", "Total, All Occupations")) %>%
+  filter(`Dim Title` != "Military Specific Occupations") %>%
+  left_join(oes.edr[,c(1,6,7)], by = c("edr", "Dim Title" = "SocTitleL")) %>%
+  mutate(ui.pct.emp = ui.claims / EmpCount,
+         `Dim Title` = as.factor(`Dim Title`)) %>%
+  filter(edr != "Minnesota") %>%
+  droplevels() %>%
+  group_by(`Dim Title`) %>%
+  complete(edr, date, fill = list(ui.claims = 0)) %>%
+  ungroup() %>%
+  rename("shitty.planning.region" = 4,
+         "shitty.EmpCount" = 6) %>%
+  left_join(regions, by = "edr") %>%
+  left_join(oes.edr[,c(1,6,7)], by = c("edr", "Dim Title" = "SocTitleL")) %>%
+  select(2,8,1,3,5,9) %>%
+  mutate(ui.pct.emp = ui.claims / EmpCount)
+
+ui.emp.occ.top5.edr <- ui.emp.occ.edr %>%
+  mutate(month = month(date, label = TRUE)) %>%
+  group_by(edr, planning.region, month, `Dim Title`) %>%
+  summarise(ui.claims = mean(ui.claims),
+            EmpCount = mean(EmpCount)) %>%
+  ungroup() %>%
+  filter(month >= "Mar") %>%
+  group_by(edr, planning.region, month) %>%
+  top_n(n = 6, wt = ui.claims) %>%
+  arrange(desc(ui.claims)) %>%
+  mutate(pct.ui.claims = ui.claims / ui.claims[`Dim Title` == "Total, All Occupations"]) %>%
+  ungroup() %>%
+  filter(`Dim Title` != "Total, All Occupations") %>%
+  group_by(edr, planning.region, month) %>%
+  arrange(desc(ui.claims)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  mutate(`Dim Title` = str_replace(`Dim Title`," Occupations", ""),
+         `Dim Title` = as.factor(`Dim Title`))
+
+mycolors <- brewer.pal(n = 12, "Paired")
+
+names(mycolors) <- levels(ui.emp.occ.top5.edr$`Dim Title`)
+
+```
+
+## Top 5 impacted occupation group unemployment trends{.tabset}
+
+<br>
+
+
+### Northwest & Northeast Minnesota
+
+<br>
+
+```{r top 5 impacted occupations trends northern}
+ui.emp.occ.top5.nedr.plot <- ggplot(filter(ui.emp.occ.top5.edr, planning.region %in% c("Northwest", "Northeast")), aes(month, ui.claims, color = `Dim Title`)) +
+  facet_wrap(~edr, ncol = 2, scales = "free_y") +
+  geom_line(size = 3, aes(group = `Dim Title`)) +
+  geom_point_interactive(size = 5, aes(data_id = ui.claims, tooltip = paste(edr, "\nOccupation group: ", `Dim Title`, "\nMonth: ", month, "\nAverage weekly UI claims: ", comma(ui.claims, accuracy = 1), "\n2019 employment in occupation group: ", comma(EmpCount), "\nPercent of total ui claims: ", percent(ui.claims, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Number of UI claims within top-5 most impacted occupations")+
+  scale_y_continuous(labels=scales::comma)+
+  theme_line+
+  scale_color_manual(values = mycolors,
+                     guide = guide_legend(ncol = 2)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = ui.emp.occ.top5.nedr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_zoom(max = 4),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+
+
+```
+
+### Central & Seven County Metro
+
+<br>
+
+```{r top 5 impacted occupations trends middle}
+ui.emp.occ.top5.medr.plot <- ggplot(filter(ui.emp.occ.top5.edr, planning.region %in% c("Central", "Seven County Mpls-St Paul")), aes(month, ui.claims, color = `Dim Title`)) +
+  facet_wrap(~edr, ncol = 2, scales = "free_y") +
+  geom_line(size = 3, aes(group = `Dim Title`)) +
+  geom_point_interactive(size = 5, aes(data_id = ui.claims, tooltip = paste(edr, "\nOccupation group: ", `Dim Title`, "\nMonth: ", month, "\nAverage weekly UI claims: ", comma(ui.claims, accuracy = 1), "\n2019 employment in occupation group: ", comma(EmpCount), "\nPercent of total ui claims: ", percent(ui.claims, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Number of UI claims within top-5 most impacted occupations")+
+  scale_y_continuous(labels=scales::comma)+
+  theme_line+
+  scale_color_manual(values = mycolors,
+                     guide = guide_legend(ncol = 2)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = ui.emp.occ.top5.medr.plot, width_svg = 10, height_svg = 7) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_zoom(max = 4),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+
+
+```
+
+### Southwest & Southeast Minnesota
+
+<br>
+
+```{r top 5 impacted occupations trends south}
+ui.emp.occ.top5.sedr.plot <- ggplot(filter(ui.emp.occ.top5.edr, planning.region %in% c("Southwest", "Southeast")), aes(month, ui.claims, color = `Dim Title`)) +
+  facet_wrap(~edr, ncol = 2, scales = "free_y") +
+  geom_line(size = 3, aes(group = `Dim Title`)) +
+  geom_point_interactive(size = 5, aes(data_id = ui.claims, tooltip = paste(edr, "\nOccupation group: ", `Dim Title`, "\nMonth: ", month, "\nAverage weekly UI claims: ", comma(ui.claims, accuracy = 1), "\n2019 employment in occupation group: ", comma(EmpCount), "\nPercent of total ui claims: ", percent(ui.claims, accuracy = .1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Number of UI claims within top-5 most impacted occupations")+
+  scale_y_continuous(labels=scales::comma)+
+  theme_line+
+  scale_color_manual(values = mycolors,
+                     guide = guide_legend(ncol = 2)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = ui.emp.occ.top5.sedr.plot, width_svg = 10, height_svg = 7) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_zoom(max = 4),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+
+
+```
+
+## Unemployment claims by occupation table
+
+<br>
+
+```{r unemployment claims by occupation table}
+ui.emp.occ.rank.edr <- ui.emp.occ.edr %>%
+  group_by(edr, planning.region, date) %>%
+  mutate(ui.pct.total.claims = ui.claims / ui.claims[`Dim Title` == "Total, All Occupations"]) %>%
+  ungroup() %>%
+  filter(`Dim Title` != "Total, All Occupations") %>%
+  group_by(edr, planning.region, date) %>%
+  arrange(desc(ui.claims)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  select(1,9,3,4,5,8) %>%
+  rename("EDR" = 1,
+         "Rank by highest UI claims for week" = 2,
+         "Occ group" = 3,
+         "Date" = 4,
+         "UI claims for week" = 5,
+         "% of total UI claims" = 6) %>%
+  arrange(EDR, Date, `Rank by highest UI claims for week`)
+
+datatable(ui.emp.occ.rank.edr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) %>%
+  formatCurrency(5, "") %>%
+  formatPercentage(6)
+
+
+```

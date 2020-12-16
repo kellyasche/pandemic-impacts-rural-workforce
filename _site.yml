@@ -1,0 +1,22 @@
+name: "COVID-19_impacts_on_rural_workforce"
+output_dir: docs
+navbar:
+  title: "COVID-19 impacts on rural workforce data analysis"
+  left:
+    - text: "Summary and data overview"
+      href: index.html
+    - text: "Pandemic impacts to rural jobs and workforce"
+      menu:
+        - text: "Unemployment"
+          href: pandemic_impacts_unemployment.html
+        - text: "Jobs"
+          href: pandemic_impacts_jobs.html
+        - text: "Occupations with labor shortages"
+          href: pandemic_impacts_labor_shortages.html
+    - text: "The future of rural jobs and workforce"
+      href: future-rural-jobs-workforce.html
+
+      
+output:
+  html_document:
+    css: "styles.css"

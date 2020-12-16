@@ -1,0 +1,555 @@
+---
+title: "Pandemic impacts on rural jobs"
+author: "Kelly Asche"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+runtime: shiny
+resource_files:
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.cpg
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.dbf
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.prj
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.sbn
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.sbx
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.shp.xml
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.shx
+---
+
+<link rel="stylesheet" href="styles.css" type="text/css">
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(sf)
+library(ggrepel)
+library(scales)
+library(shiny)
+library(shinycssloaders)
+library(ggiraph)
+library(kableExtra)
+library(rmapshaper)
+library(cowplot)
+library(DT)
+library(htmlwidgets)
+library(RColorBrewer)
+library(extrafont)
+library(readxl)
+library(janitor)
+library(lubridate)
+
+loadfonts()
+```
+
+```{r loading jon docs and shapefiles, cache=TRUE, include=FALSE}
+theme_bar <- theme_bw() +
+  theme(panel.grid.major = element_line(color = "grey70", size = 0.1),
+        panel.grid.minor = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_text(face = "bold"),
+        panel.border = element_blank(),
+        legend.background = element_rect(fill = "transparent", color = "transparent"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.key.size = unit(1, "lines"),
+        legend.margin = margin(0,0,0,0),
+        legend.title = element_blank(),
+        legend.text = element_text(margin = margin(l = 2)),
+        text = element_text(family = "Arial"))
+
+theme_line <- theme_bw() +
+  theme(legend.background = element_rect(fill = "transparent", color = "transparent"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.text = element_text(margin = margin(l = 2)),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey70", size = 0.1),
+        axis.ticks = element_blank(),
+        axis.text = element_text(face = "bold"),
+        panel.border = element_blank(),
+        legend.margin = margin(0,0,0,0),
+        legend.key.size = unit(1, "lines"),
+        text = element_text(family = "Arial"))
+
+
+theme_sf <- theme_bw() +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_blank(),
+        panel.grid.major = element_line(color = "white"),
+        panel.border = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        legend.title = element_blank(),
+        legend.text = element_text(margin = margin(l = 2)),
+        legend.margin = margin(0,0,0,0),
+        legend.key.size = unit(1, "lines"),
+        text = element_text(family = "Arial"))
+
+regions <- read_csv("Data/Join docs/county_regions.csv") %>%
+    select(5,6) %>%
+    unique() %>%
+    mutate(edr = str_replace(edr, "  ", " "),
+           planning.region = str_replace(planning.region, " Minnesota", ""),
+           planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+           edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+counties.regions <- read_csv("Data/Join docs/county_regions.csv") %>%
+  mutate(countyfp = formatC(countyfp, width = 3, flag = "0"),
+         Name = str_to_title(Name),
+         Name = str_replace(Name, "Q", "q"),
+         Name = str_replace(Name, "Of The", "of the"),
+         Name = str_replace(Name, "Mcleod", "McLeod"),
+         Dem_Desc = ifelse(Name == "Minnesota", "Minnesota", Dem_Desc) ,
+         edr = str_replace(edr, "  ", " "),
+         planning.region = str_replace(planning.region, " Minnesota", ""),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+color.ruca <- c("Entirely rural" = "#009933", "Town/rural mix" = "#99CC33", "Urban/town/rural mix" = "#CC9966", "Entirely urban" = "#754C29", "Minnesota" = "black")
+
+color.pr <- c("Northwest" = 	"#4575b4", "Northeast" = "#e0f3f8", "Central" = "#fee090", "Seven County Mpls-St Paul" = "#d73027", "Southwest" = "#91bfdb", "Southeast" = "#fc8d59", "Minnesota" = "black")
+
+color.edr <- c("EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6", "EDR 3 - Arrowhead" = "#fe9929", "EDR 4 - West Central" = "#8856a7", "EDR 5 - North Central" = "#810f7c", "EDR 6E- Southwest Central" = "#e5f5f9", "EDR 6W- Upper Minnesota Valley" = "#bdc9e1", "EDR 7E- East Central" = "#99d8c9", "EDR 7W- Central" = "#2ca25f", "EDR 8 - Southwest" = "#74a9cf", "EDR 9 - South Central" = "#0570b0", "EDR 10 - Southeast" = "#d7301f", "EDR 11 - 7 County Twin Cities" = "#d8b365", "Minnesota" = "black")
+
+color.pr.edr <- c ("Northwest" = "#4575b4","Northeast" = "#e0f3f8", "Central" = "#fee090", "Seven County Mpls-St Paul" = "#d73027", "Southwest" = "#91bfdb", "Southeast" = "#fc8d59", "Minnesota" = "black", "EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6", "EDR 3 - Arrowhead" = "#fe9929", "EDR 4 - West Central" = "#8856a7", "EDR 5 - North Central" = "#810f7c", "EDR 6E- Southwest Central" = "#e5f5f9", "EDR 6W- Upper Minnesota Valley" = "#bdc9e1", "EDR 7E- East Central" = "#99d8c9", "EDR 7W- Central" = "#2ca25f", "EDR 8 - Southwest" = "#74a9cf", "EDR 9 - South Central" = "#0570b0", "EDR 10 - Southeast" = "#d7301f", "EDR 11 - 7 County Twin Cities" = "#d8b365")
+
+color.six <- c("#009933", "#4575b4", "grey", "#fee090", "#fc8d59", "#d73027")
+
+```
+
+```{r shapefiles, include=FALSE, cache=TRUE}
+edr_bound <- st_read("Data/Shapefiles/RDO shapefiles/rdo.shp", quiet = TRUE)
+
+pr_bound <- st_read("Data/Shapefiles/planning region shapefiles/PlanningRegion_2006.shp", quiet = TRUE) %>%
+  mutate(PlanningRe = str_replace(PlanningRe, "Metro", "Seven County Mpls-St Paul"))
+```
+
+```{r master job vacancy survey, include=FALSE, cache=TRUE}
+jv.edr <- read_csv("Data/job vacancies/Master-jv-2005-2020-edr.csv") %>%
+  filter(soclevel == 0,
+         edr != "Minnesota",
+         year < 2020) %>%
+  select(1,2,3,8) %>%
+  group_by(edr, year) %>%
+  summarise(vacanrate = mean(vacanrate, na.rm = TRUE)) %>%
+  ungroup() %>%
+  left_join(regions, by = "edr") %>%
+  mutate(vacanrate = vacanrate/100,
+         planning.region = str_replace(planning.region, " Minnesota", ""),
+         planning.region = str_replace(planning.region, ", MN", ""),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+```
+
+```{r master job postings objects, include=FALSE, cache=TRUE}
+master.job.postings <- read_csv("Data/Job postings/master-job-postings.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+job.postings.unique.by.week.county <- master.job.postings %>%
+  group_by(posting.date) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions)
+
+job.postings.unique.by.month.county <- master.job.postings %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(posting.month) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions)
+
+job.postings.date <- job.postings.unique.by.week.county %>%
+  summarise(max = max(posting.date))
+```
+
+```{r master job postings with job family objects, include=FALSE, cache=TRUE}
+master.job.postings.with.family <- read_csv("Data/Job postings/master-job-postings-job-family.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+master.job.postings.with.family.occ <- read_csv("Data/Job postings/master-job-postings-job-family-and-occ.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+```
+
+```{r master oes objects, include=FALSE, cache=TRUE}
+oes.edr <- read_csv("Data/Occupations/OES/Master-oes-edr.csv") %>%
+   mutate(edr = str_replace(edr, "  ", " "),
+          edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota")) %>%
+  left_join(regions, by = "edr") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+```
+
+```{r master ui objects, include=FALSE, cache=TRUE}
+ui.county <- read_csv("Data/UI/Master-ui-claims-total-county.csv")
+
+ui.edr <- read_csv("Data/UI/Master-ui-claims-total-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota")) %>%
+  left_join(regions, by = "edr") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+ui.pr <- read_csv("Data/UI/Master-ui-claims-total-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
+
+ui.occ.edr <- read_csv("Data/UI/Master-ui-claims-occ-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast")) 
+
+ui.occ.pr <- read_csv("Data/UI/Master-ui-claims-occ-pr.csv") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast")) 
+
+```
+
+<br>
+
+# How has the pandemic impacted the number of jobs available?{.tabset}
+
+The charts below provide the job vacancy rate for each region. The job vacancy rate is the number of job postings as a percentage of total jobs in the region. The higher the percentage, the more pressure there is to fill jobs. 
+
+Before 2020, job vacancies were a significant concern for workforce development organizations in rural Minnesota. In fact, the highest vacancy rates are outside of the seven county metro. EDRs in Southwest and Northwest Minnesota had vacancy rates near or above 6%. 
+
+Since the pandemic began, job vacancy rates have decreased, but only by a few percentage points. Most regions in Greater Minnesota have vacancy rates between 3.5% and 4%, and are higher than the seven-county metro's rate of 3.2%. 
+
+<br>
+
+```{r prep jv rate pre and post pandemic, include=FALSE, cache=TRUE}
+job.postings.monthly.total.edr <- job.postings.unique.by.month.county %>%
+  group_by(edr, planning.region, posting.month) %>%
+  summarise(job.postings.total = n()) %>%
+  ungroup()
+
+emp.edr <- oes.edr %>%
+  filter(SocLevel == 0) %>% 
+  select(1,7)
+
+job.postings.monthly.total.emp.edr <- job.postings.monthly.total.edr %>%
+  left_join(emp.edr, by = "edr") %>%
+  mutate(job.postings.pct.emp = job.postings.total/EmpCount,
+         data_id = as.character(seq(n())))
+
+vacancy.rate.2020.edr <- job.postings.monthly.total.emp.edr %>%
+  filter(posting.month != "Nov") %>%
+  group_by(edr, planning.region) %>%
+  summarise(vacanrate.2020 = mean(job.postings.pct.emp),
+            EmpCount = mean(EmpCount),
+            avg.job.postings.total = mean(job.postings.total)) %>%
+  ungroup() %>%
+  mutate(data_id = as.character(seq(n())))
+```
+
+## Job vacancy rate, pre-pandemic
+
+```{r charts jv rate pre-pandemic}
+
+jv.prepandemic.edr.plot <- ggplot(jv.edr, aes(year, vacanrate, color = edr)) +
+  facet_wrap(~planning.region, ncol = 2) +
+  geom_hline(yintercept = 0, color = "black") +
+  geom_smooth(se = FALSE, size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = vacanrate, tooltip = paste(edr, "\nYear: ", year, "\nJob vacancy rate: ", percent(vacanrate, accuracy = .1), sep = ""))) +
+    geom_label_repel(data = filter(jv.edr, year == 2019), aes(year, vacanrate, label = percent(vacanrate, accuracy = .1)), show.legend = FALSE, size = 5) +
+  labs(x="", y = "", color="", title = "Job vacancy rate before 2020", caption = "MN DEED - Job Vacancy Survey")+
+  scale_y_continuous(labels=scales::percent)+
+  scale_x_continuous(breaks = seq(1900, 2050, 2)) +
+  theme_line+
+  scale_color_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = jv.prepandemic.edr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+```
+
+## Job vacancy rate, September - October 2020
+
+<br>
+
+```{r charts job vacancy rate post-pandemic}
+
+vacancy.rate.2020.edr.plot <- ggplot(vacancy.rate.2020.edr, aes(edr, vacanrate.2020, fill = edr)) +
+  geom_col_interactive(position = "dodge", aes(data_id = data_id, tooltip = paste(edr, "\nNumber employed in 2019: ", comma(EmpCount, accuracy = 1), "\nAverage number of job postings in September and October: ", comma(avg.job.postings.total, accuracy = 1), "\nJob vacancy rate: ", percent(vacanrate.2020, accuracy = .1), sep = ""))) +
+  geom_label(size = 5, show.legend = FALSE, aes(label = percent(vacanrate.2020, accuracy = .1))) +
+  labs(x="", y = "", color="", title = "Average job postings in Sep - Oct 2020 as a percent of total jobs\nin region", caption = "MN DEED - National Labor Exchange")+
+  scale_y_continuous(labels=scales::percent)+
+  theme_bar+
+  scale_fill_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+girafe(ggobj = vacancy.rate.2020.edr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE),
+                 opts_sizing(rescale = FALSE))
+
+```
+
+<br>
+
+# How does the number of unemployment claims compare to the number of jobs available?{.tabset}
+
+Since there are still a relatively large number of job vacancies in Greater Minnesota, it's important to know if there is a labor force to tap into. An analysis that compares the number of unemployment claims with the number of job postings indicates that the labor pool that once existed due to high unemployment during the beginning of the pandemic is quickly diminishing, particularly in Greater Minnesota.
+
+The charts below provide the number of weekly unique job positions available as a percentage of the weekly continuous unemployment insurance claims. The data shows that many EDRs in Southwest and Northwest Minnesota have their number of job positions available nearly equal to or more than unemployment claims by the end of October. These trends are largely due to the decline in unemployment claims rather than increasing number of job positions available, which have been relatively the same number each week from September through October.
+
+<br>
+
+```{r prep job postings as a % of UI claims, include=FALSE, cache=TRUE}
+ui.weekly.edr <- ui.edr %>%
+  gather(key = "ui.date", value = "ui.claims", 3:ncol(ui.pr)) %>%
+  mutate(ui.date = mdy(ui.date)) %>%
+  mutate(ui.claims.month = month(ui.date, label = TRUE)) %>%
+  group_by(edr, planning.region, ui.claims.month) %>%
+  arrange(ui.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup()
+
+job.postings.weekly.total.edr <- job.postings.unique.by.week.county %>%
+  group_by(edr, planning.region, posting.date) %>%
+  summarise(job.postings.total = n()) %>%
+  ungroup() %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(edr,planning.region, posting.month) %>%
+  arrange(posting.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup()
+
+job.postings.weekly.total.ui.edr <- job.postings.weekly.total.edr %>%
+  group_by(edr, planning.region, posting.month) %>%
+  arrange(posting.date) %>%
+  mutate(week.num = seq(n())) %>%
+  ungroup() %>%
+  left_join(ui.weekly.edr, by = c("edr", "planning.region", "week.num", "posting.month" = "ui.claims.month")) %>%
+  drop_na(ui.claims) %>%
+  mutate(job.postings.pct.ui.claims =  job.postings.total / ui.claims,
+         month.week = paste(posting.month, ", ", week.num, sep = ""),
+         data_id = as.character(seq(n())))
+
+job.postings.weekly.total.ui.index.edr <- job.postings.weekly.total.ui.edr %>%
+  group_by(edr, planning.region, `Dim Title`) %>%
+  mutate(job.postings.index = job.postings.total / job.postings.total[posting.date == min(job.postings.weekly.total.ui.edr$posting.date)],
+         ui.claims.index = ui.claims / ui.claims[posting.date == min(job.postings.weekly.total.ui.edr$posting.date)]) %>%
+  ungroup() %>%
+  gather(key = "index.type", value = "index", 13:14)
+
+```
+
+## Job postings as a % of UI claims - trends
+
+<br>
+
+```{r chart job postings as a % of UI claims}
+job.postings.weekly.total.ui.edr.plot <- ggplot(job.postings.weekly.total.ui.edr, aes(posting.date, job.postings.pct.ui.claims, color = edr)) +
+  facet_wrap(~planning.region, ncol = 2) +
+  geom_line(size = 3) +
+  geom_hline(yintercept = 1, color = "black") +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(edr, "\nMonth: ", posting.month, "\nWeek of month: ", week.num, "\nNumber of job postings for week: ", comma(job.postings.total), "\nNumber of UI claims for week: ", comma(ui.claims), "\nJob postings as a % of UI claims: ", percent(job.postings.pct.ui.claims, accuracy = .1), sep = ""))) +
+  geom_label_repel(data = filter(job.postings.weekly.total.ui.edr, posting.date == max(job.postings.weekly.total.ui.edr$posting.date)), aes(x = posting.date, y = job.postings.pct.ui.claims, label = percent(job.postings.pct.ui.claims, accuracy = .1)), show.legend = FALSE, size = 5) +
+  labs(x="", y = "", color="", title = "Weekly job postings as a percent of weekly UI claims", caption = "MN DEED - National Labor Exchange | Continuous Unemployment Insurance Claims") +
+  scale_y_continuous(labels=scales::percent) +
+  theme_line +
+  scale_color_manual(values = color.edr,
+                   guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+      text = element_text(size = 18))
+
+girafe(ggobj = job.postings.weekly.total.ui.edr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_sizing(rescale = FALSE))
+```
+
+<br>
+
+# What types of jobs are in-demand?{.tabset}
+
+What's a bit surprising when analyzing the job postings is the number of jobs available within occupation groups that also have high unemployment claims.
+
+The first tab below provides the top-5 occupation groups that have the highest number of job postings for each region. The first number listed after the occupation group is the number of job positions available as a percentage of the total positions available. The second number is the rolling percentage of abilable positions through that occupation group. This is helpful in knowing whether there is a large concentration of positions available in a few occupation groups or if they are more spread out.
+
+Not surprisingly, occupations in the healthcare practitioners and technical field have some of the highest number of positions available across most of the regions in Minnesota. However, it is surprising to see occupations such as production, sales and related, office and administrative support, and food preparation and serving related be in the top-5 for a number of regions that also had those occupation groups in their top-5 with the highest unemployment claims. This points to the likeliness that after restrictions were lifted businesses had challenges convincing employees to take the risk and come back to work so they put out a call for help.
+
+Looking at differences from the seven-county metro to our more rural areas of the state, the occupation group management and, computer and mathematical show up in the metro while production, transportation and material moving, and, farming, fishing and forestry were more likely to appear on the list for more rural areas of the state.
+
+The second tab below goes into even more specificity in the positions that available by analysing the 6-digit standard occupational classification codes linked to the posts. The table in that tab provides the top-5 occupations (at the 6-digit SOC codes) for each of the top-5 occupational groups in each region from the previous tab. There's a lot of information there but here's some general comments.
+
+* Production: For regions with production as one of their top in-demand jobs, most of the positions were concentrated in occupations such as assemblers and fabricators, first-line supervisors, as well as welders, cutters, solderers, and brazers.
+
+* Transportation and material moving: Most of the positions were concentrated in heavy and tracter-trailer truck driver, light truck or delivery services, drivers or sales workers, as well as laborers and freight, stock, and material movers. 
+
+* Food preparation and serving related: The positions here were concentrated in the combined food preparation and serving workers, including fast food, as well as first line supervisors. 
+
+* Healthcare practitioners and technical: Nearly all of the positions available were concentrated in two occupations - registered nurses and licensed practical and licensed vocational nurses. However, due to the large need for workers in this occupation group, there is significant need for workers in many occupations within this field.
+
+* Healthcare support: nearly all of the positions available within this field were in the home health aides and nursing assistants occupations.
+
+* Sales and related: most of the positions were concentrated in the first-line supervisors of retail sales workers, retail salespersons and cashiers occupations.
+
+* Personal care and service: most of the positions were concentrated in the personal care aides occupations.
+
+* Office and administrative support: the occupations available within this field were concentrated in stock clerks and order fillers, first-line supervisors of office and administrative office workers, and customer sales representative.
+
+* Community and social services: Nearly all of the positions available were categorized as social and human service assistanct or mental health and substance abuse counselors.
+
+* Farming, fishing and forestry: these occupations were largely in ag related occupations  such as farmworkers and laborers, as well as agricultural equipment operators.
+
+* Management: the occupations listed for these positions were broadly distributed across managers, marketing managers, general and operations managers, sales managers, and medical and health services managers. 
+<br>
+
+```{r prep jobs in demand, include=FALSE, cache=TRUE}
+job.postings.occ.group.unique.by.month.edr <- master.job.postings.with.family %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(posting.month) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions)
+
+job.postings.occ.group.sepoctavg.edr <- job.postings.occ.group.unique.by.month.edr %>%
+  filter(posting.month < "Nov") %>%
+  droplevels() %>%
+  group_by(edr, posting.month, Job_Family) %>%
+  summarise(positions = n()) %>%
+  ungroup() %>%
+  complete(edr, posting.month, Job_Family, fill = list(positions = 0)) %>%
+  group_by(edr, posting.month) %>%
+  mutate(total.positions = sum(positions)) %>%
+  ungroup() %>%
+  group_by(edr, Job_Family) %>%
+  summarise(avg.positions = round(mean(positions)),
+            avg.total.positions = round(mean(total.positions))) %>%
+  ungroup() %>%
+  group_by(edr) %>%
+  arrange(desc(avg.positions)) %>%
+  mutate(rank = seq(n()),
+         cumsum = cumsum(avg.positions),
+         pct.total.positions = avg.positions / avg.total.positions,
+         cum.pct.total.positions = cumsum / avg.total.positions) %>%
+  ungroup()
+
+job.postings.occ.group.sepoctavg.top5.edr <- job.postings.occ.group.sepoctavg.edr %>%
+  filter(rank <= 5) %>%
+  select(1,2,3,5,7,8) %>%
+  mutate(label = paste(Job_Family, " - ", percent(pct.total.positions, accuracy = .1), ", ", percent(cum.pct.total.positions, accuracy = .1), sep = "")) %>%
+  select(4,1,7) %>%
+  spread(key = edr, value = label) %>%
+  rename(`Rank by most openings` = 1)
+
+job.postings.soc.unique.by.month.edr <- master.job.postings.with.family.occ %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(posting.month) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions) %>%
+  mutate(soc.1 = str_sub(soc, 3, 8),
+         soc.2 = str_sub(soc, 13, 18),
+         soc.3 = str_sub(soc, 23, 28),
+         length = str_length(soc),
+         soc.1 = ifelse(length == 4, "", soc.1))  
+
+soc.codes <- read_xlsx("Data/Job postings/soc-codes.xlsx") %>%
+  mutate(major = ifelse(is.na(major), minor, major),
+         major = ifelse(is.na(major), broad, major),
+         major = ifelse(is.na(major), detailed, major),
+         major = str_replace(major, "-", ""),
+         major = as.factor(major)) %>%
+  select(1,5) %>%
+  rename(soc.code = 1)
+
+top.5.job.family.list <- job.postings.occ.group.sepoctavg.top5.edr %>%
+  gather(key = "edr", value = "label", 2:14) %>%
+  mutate(Job_Family = str_sub(label, 1, -15),
+         Job_Family = trimws(Job_Family, "both")) %>%
+  select(1,2,4)
+
+job.postings.soc.sepoctavg.edr <- job.postings.soc.unique.by.month.edr %>%
+  select(23, 12,25, 26,27,28) %>%
+  group_by(edr, posting.month, Job_Family) %>%
+  mutate(job.family.positions = n()) %>%
+  ungroup %>%
+  group_by(edr, posting.month) %>%
+  mutate(total.positions = n()) %>%
+  ungroup() %>%
+  gather(key = "soc.level", value = "soc", 4:6) %>%
+  mutate(soc = as.factor(soc)) %>%
+  group_by(edr, soc, posting.month) %>%
+  mutate(soc.positions = n()) %>%
+  distinct(soc, .keep_all = TRUE) %>%
+  ungroup() %>%
+  left_join(soc.codes, by = c("soc" = "soc.code")) %>%
+  mutate(title = ifelse(is.na(title), "Unknown", title)) %>%
+  group_by(edr, soc, title) %>%
+  mutate(avg.soc.position = round(mean(soc.positions))) %>%
+  ungroup() %>%
+  group_by(edr, Job_Family) %>%
+  mutate(avg.job.family.positions = round(mean(job.family.positions))) %>%
+  ungroup() %>%
+  filter(posting.month == "Sep") %>%
+  select(1,2,7,9,10,11,5) %>%
+  mutate(job.family.pct.total = avg.job.family.positions / total.positions,
+         soc.positions.pct.job.family = avg.soc.position / avg.job.family.positions)
+
+job.postings.soc.top5.edr <- job.postings.soc.sepoctavg.edr %>%
+  group_by(edr, Job_Family) %>%
+  top_n(n = 5, wt = avg.soc.position) %>%
+  arrange(desc(avg.soc.position)) %>%
+  ungroup() %>%
+  right_join(top.5.job.family.list, by = c("edr", "Job_Family")) %>%
+  select(1,10,2,4,5,9) %>%
+  rename("EDR" = 1,
+         "Rank by most openings in job family" = 2,
+         "Job Family" = 3,
+         "Occupation Title" = 4,
+         "Avg number of positions available" = 5,
+         "Positions of job as a percent of all openings in job family" = 6)
+
+
+```
+
+## Top-5 in-demand occupational groups
+
+<br>
+
+```{r table 5 most in-demand occupations}
+
+kable(format = "html", job.postings.occ.group.sepoctavg.top5.edr, escape = F, align = "c") %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%
+  scroll_box(width = "100%", height = "100%")
+
+
+```
+
+## Top-5 detailed occupations within each top-5 in-demand occupation group (6-digit SOC)
+
+<br>
+
+```{r table top 5 soc of top-5 job families}
+datatable(job.postings.soc.top5.edr[order(job.postings.soc.top5.edr$EDR, job.postings.soc.top5.edr$`Rank by most openings in job family`), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(0,2)))) %>%
+  formatPercentage(6)
+```
+
+
+
+
