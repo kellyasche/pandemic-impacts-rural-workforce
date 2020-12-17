@@ -31,6 +31,9 @@ loadfonts()
 
 ```
 
+<link rel="stylesheet" href="styles.css" type="text/css">
+
+
 ```{r loading jon docs and shapefiles, cache=TRUE, include=FALSE}
 theme_bar <- theme_bw() +
   theme(panel.grid.major = element_line(color = "grey70", size = 0.1),
