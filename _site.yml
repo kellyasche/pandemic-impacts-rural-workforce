@@ -11,7 +11,7 @@ navbar:
           href: pandemic_impacts_unemployment.html
         - text: "Jobs"
           href: pandemic_impacts_jobs.html
-        - text: "Occupations with labor shortages"
+        - text: "Laborforce shortages"
           href: pandemic_impacts_labor_shortages.html
     - text: "The future of rural jobs and workforce"
       href: future-rural-jobs-workforce.html

@@ -1,0 +1,282 @@
+---
+title: "Impacts on workforce shortages"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+runtime: shiny
+resource_files:
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.cpg
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.dbf
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.prj
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.sbn
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.sbx
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.shp.xml
+- Data/Shapefiles/County shapefiles/MNCounties_MNDOT.shx
+---
+
+<link rel="stylesheet" href="styles.css" type="text/css">
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(sf)
+library(ggrepel)
+library(scales)
+library(shiny)
+library(shinycssloaders)
+library(ggiraph)
+library(kableExtra)
+library(rmapshaper)
+library(cowplot)
+library(DT)
+library(htmlwidgets)
+library(RColorBrewer)
+library(extrafont)
+library(readxl)
+library(janitor)
+library(lubridate)
+
+loadfonts()
+```
+
+```{r loading jon docs and shapefiles, cache=TRUE, include=FALSE}
+theme_bar <- theme_bw() +
+  theme(panel.grid.major = element_line(color = "grey70", size = 0.1),
+        panel.grid.minor = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_text(face = "bold"),
+        panel.border = element_blank(),
+        legend.background = element_rect(fill = "transparent", color = "transparent"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.key.size = unit(1, "lines"),
+        legend.margin = margin(0,0,0,0),
+        legend.title = element_blank(),
+        legend.text = element_text(margin = margin(l = 2)),
+        text = element_text(family = "Arial"))
+
+theme_line <- theme_bw() +
+  theme(legend.background = element_rect(fill = "transparent", color = "transparent"),
+        legend.key = element_rect(fill = "transparent"),
+        legend.text = element_text(margin = margin(l = 2)),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey70", size = 0.1),
+        axis.ticks = element_blank(),
+        axis.text = element_text(face = "bold"),
+        panel.border = element_blank(),
+        legend.margin = margin(0,0,0,0),
+        legend.key.size = unit(1, "lines"),
+        text = element_text(family = "Arial"))
+
+
+theme_sf <- theme_bw() +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        panel.background = element_blank(),
+        panel.grid.major = element_line(color = "white"),
+        panel.border = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        legend.title = element_blank(),
+        legend.text = element_text(margin = margin(l = 2)),
+        legend.margin = margin(0,0,0,0),
+        legend.key.size = unit(1, "lines"),
+        text = element_text(family = "Arial"))
+
+regions <- read_csv("Data/Join docs/county_regions.csv") %>%
+    select(5,6) %>%
+    unique() %>%
+    mutate(edr = str_replace(edr, "  ", " "),
+           planning.region = str_replace(planning.region, " Minnesota", ""),
+           planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+           edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+counties.regions <- read_csv("Data/Join docs/county_regions.csv") %>%
+  mutate(countyfp = formatC(countyfp, width = 3, flag = "0"),
+         Name = str_to_title(Name),
+         Name = str_replace(Name, "Q", "q"),
+         Name = str_replace(Name, "Of The", "of the"),
+         Name = str_replace(Name, "Mcleod", "McLeod"),
+         Dem_Desc = ifelse(Name == "Minnesota", "Minnesota", Dem_Desc) ,
+         edr = str_replace(edr, "  ", " "),
+         planning.region = str_replace(planning.region, " Minnesota", ""),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+color.ruca <- c("Entirely rural" = "#009933", "Town/rural mix" = "#99CC33", "Urban/town/rural mix" = "#CC9966", "Entirely urban" = "#754C29", "Minnesota" = "black")
+
+color.pr <- c("Northwest" = 	"#4575b4", "Northeast" = "#e0f3f8", "Central" = "#fee090", "Seven County Mpls-St Paul" = "#d73027", "Southwest" = "#91bfdb", "Southeast" = "#fc8d59", "Minnesota" = "black")
+
+color.edr <- c("EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6", "EDR 3 - Arrowhead" = "#fe9929", "EDR 4 - West Central" = "#8856a7", "EDR 5 - North Central" = "#810f7c", "EDR 6E- Southwest Central" = "#e5f5f9", "EDR 6W- Upper Minnesota Valley" = "#bdc9e1", "EDR 7E- East Central" = "#99d8c9", "EDR 7W- Central" = "#2ca25f", "EDR 8 - Southwest" = "#74a9cf", "EDR 9 - South Central" = "#0570b0", "EDR 10 - Southeast" = "#d7301f", "EDR 11 - 7 County Twin Cities" = "#d8b365", "Minnesota" = "black")
+
+color.pr.edr <- c ("Northwest" = "#4575b4","Northeast" = "#e0f3f8", "Central" = "#fee090", "Seven County Mpls-St Paul" = "#d73027", "Southwest" = "#91bfdb", "Southeast" = "#fc8d59", "Minnesota" = "black", "EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6", "EDR 3 - Arrowhead" = "#fe9929", "EDR 4 - West Central" = "#8856a7", "EDR 5 - North Central" = "#810f7c", "EDR 6E- Southwest Central" = "#e5f5f9", "EDR 6W- Upper Minnesota Valley" = "#bdc9e1", "EDR 7E- East Central" = "#99d8c9", "EDR 7W- Central" = "#2ca25f", "EDR 8 - Southwest" = "#74a9cf", "EDR 9 - South Central" = "#0570b0", "EDR 10 - Southeast" = "#d7301f", "EDR 11 - 7 County Twin Cities" = "#d8b365")
+
+```
+
+```{r master ui objects, include=FALSE, cache=TRUE}
+
+ui.occ.edr <- read_csv("Data/UI/Master-ui-claims-occ-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast")) 
+
+```
+
+```{r master job postings objects, include=FALSE, cache=TRUE}
+master.job.postings.with.family <- read_csv("Data/Job postings/master-job-postings-job-family.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+```
+
+<br>
+
+Although our analysis has shown that there are a significant number of jobs available in Greater Minnesota, the next question is whether employers have access to a "ready-to-work" pool of unemployed individuals. Essentially, do "in-demand" occupations (occupations with many positions available) have access to an unemployment pool within the same occupation or is their a mismatch? The following sections examine the unemployment claims by occupation and the job postings by occupations to determine which occupation group might find it challenging to tap the larger than normal unemployment pool that currently exists.
+
+# How many occupation groups are facing workforce shortages?
+
+Despite the significant disruption on the social and economic life of Minnesotan's and the resulting increases of individuals filing unemployment claims throughout 2020, there continues to be a number of occupations that continue to face workforce shortages. 
+
+The chart below provides the number of occupation groups in each region that had more weekly job positions available than unemployment claims. Although each region has experienced and increase in their occupations in this situation, the most significant growth has occured in Greater Minnesota.
+
+In Northwest Minnesota, EDR 1 - Northwest, EDR 2 - Headwaters and EDR 4 - West Central have ten or more occupation groups (of 22) that currently have more job positions than individuals filing for continuous unemployment insurance claims. In Southern Minnesota, all of the EDRs have more than 10 occupation groups in the same situation.  
+
+
+<br>
+
+```{r prep labor shortage occ number edr, include=FALSE, cache=TRUE}
+ui.weekly.occ.edr <- ui.occ.edr %>%
+  gather(key = "ui.date", value = "ui.claims", 3:(max(ncol(ui.occ.edr))-1)) %>%
+  mutate(`Dim Title` = str_replace(`Dim Title`, " Occupations", ""),
+         `Dim Title` = str_replace(`Dim Title`, " Occup.", ""),
+         `Dim Title` = str_replace(`Dim Title`, " Occ", ""),
+         `Dim Title` = as.factor(`Dim Title`)) %>%
+  mutate(ui.date = mdy(ui.date),
+         ui.month = month(ui.date, label = TRUE)) %>%
+  group_by(edr, planning.region, `Dim Title`, ui.month) %>%
+  mutate(week = seq(n())) %>%
+  ungroup()
+
+job.postings.weekly.occ.edr <- master.job.postings.with.family %>%
+  group_by(edr, planning.region, posting.date) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions) %>%
+  group_by(edr, planning.region, posting.date, Job_Family) %>%
+  summarise(job.postings = n()) %>%
+  ungroup() %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(edr, planning.region, Job_Family, posting.month) %>%
+  mutate(week = seq(n())) %>%
+  ungroup() %>%
+  mutate(Job_Family = str_replace(Job_Family, "Community and Social Service", "Community and Social Services"),
+         Job_Family = str_replace(Job_Family, "Building and Grounds Cleaning and Maintenance", "Building & Grounds Cleaning & Maintenance"),
+         Job_Family = as.factor(Job_Family))
+
+ui.job.postings.weekly.occ.edr <- ui.weekly.occ.edr %>%
+  group_by(edr, planning.region, ui.date, ui.month, week) %>%
+  complete(`Dim Title`, fill = list(ui.claims = 0)) %>%
+  ungroup() %>%
+  left_join(job.postings.weekly.occ.edr[,c(1,2,3,4,5,6,7)], by = c("edr", "planning.region", "ui.month" = "posting.month", "week", `Dim Title` = "Job_Family")) %>%
+  filter(ui.month %in% c("Sep", "Oct", "Nov"),
+         `Dim Title` != "Total Claims",
+         edr != "Minnesota") %>%
+  mutate(job.posting.ui.difference = job.postings - ui.claims,
+         shortage.surplus = ifelse(job.posting.ui.difference >= 0, "Shortage", "Surplus"),
+         shortage.surplus = as.factor(shortage.surplus))
+
+
+labor.shortage.edr <- ui.job.postings.weekly.occ.edr %>%
+  filter(shortage.surplus == "Shortage")
+
+
+labor.shortages.occ.number.edr <- labor.shortage.edr %>%
+  group_by(edr, planning.region, ui.date) %>%
+  summarise(number.occ.shortages = n()) %>%
+  ungroup() %>% 
+  mutate(data_id = seq(n()))
+```
+
+```{r chart labor shortages occ number edr}
+labor.shortages.occ.number.edr.plot <- ggplot(labor.shortages.occ.number.edr, aes(ui.date, number.occ.shortages, color = edr)) +
+  facet_wrap(~planning.region, ncol = 2) +
+  geom_line(size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(edr, "\n", ui.date, "\nNumber of occupation groups with workforce shortages: ", comma(number.occ.shortages, accuracy = 1), sep = ""))) +
+  labs(x="", y = "", color="", title = "Number of occupation groups with more jobs available than unemployment claims") +
+  geom_label(data = filter(labor.shortages.occ.number.edr, ui.date == max(labor.shortages.occ.number.edr$ui.date)), aes(x = ui.date, y = number.occ.shortages, label = comma(number.occ.shortages, accuracy = 1)), show.legend = FALSE, size = 5) +
+  scale_y_continuous(labels=scales::comma)+
+  theme_line+
+  scale_color_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = labor.shortages.occ.number.edr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+```
+
+<br>
+
+# Which occupation groups are experiencing a shortage in their workforce?
+
+Analysis of the data shows that there were over 20 different occupation groups experiencing a workforce shortage in at least one of our EDRs. The table below provides  a list of each of those occupations and the number of EDRs where they are experiencing a workforce shortage.
+
+What is apparent is that there is significant breadth to the occupation groups that have workforce shortages. Even for occupation groups such as computer and mathematical which one might view as being largely available in the seven county metro is actually facing shortages in 7 of our 13 EDRs. 
+
+
+<br>
+
+```{r table number of edrs occupation groups are in with shortages}
+occ.group.num.edrs.labor.shortage <- labor.shortage.edr %>%
+  filter(ui.date == max(labor.shortage.edr$ui.date)) %>%
+  group_by(`Dim Title`) %>%
+  summarise(num.edr = n()) %>%
+  ungroup() %>%
+  mutate(`% of EDRs` = num.edr / 13) %>%
+  arrange(desc(num.edr)) %>%
+  rename(`Occ Group` = 1,
+         `Number of EDRs with workforce shortage` = 2,
+         `% of EDRs with workforce shortage` = 3)
+
+kable(format = "html", occ.group.num.edrs.labor.shortage, escape = F, align = "c") %>%
+  kable_styling(bootstrap_options = "striped", full_width = TRUE) %>%
+  scroll_box(width = "100%", height = "100%")
+
+
+```
+
+<br>
+
+Below provides the occupation groups that are facing workforce shortages in each of the EDRs. It also provides how many more job positions were posted compared to the number of unemployment claims for the last week of October. What's interesting about the list is how some occupations that haven't been at the top of any of the previous lists are at the top here. For example, transportation and material moving did not have high unemployment claims, was listed in a few rural EDRs as having quite a few positions available (in-demand) and is at the top of the list for workforce shortages in many of our rural EDRs.
+
+<br>
+
+```{r prep top occupations with labor shortages, include=FALSE, cache=TRUE}
+labor.shortages.top.occ.edr <- labor.shortage.edr %>%
+  filter(ui.date == max(labor.shortage.edr$ui.date),
+         job.posting.ui.difference > 0) %>%
+  group_by(edr) %>%
+  arrange(desc(job.posting.ui.difference)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  select(1,6,10,12) %>%
+  complete(edr, rank, fill = list(`Dim Title` = "", "job.posting.ui.difference" = "")) %>%
+  mutate(`Dim Title` = ifelse(is.na(`Dim Title`), "", as.character(`Dim Title`))) %>%
+  mutate(label = paste(`Dim Title`, " - ", job.posting.ui.difference, sep = "")) %>%
+  select(1,2,5) %>%
+  spread(key = edr, value = label)
+```
+
+```{r table top occupations with labor shortages}
+datatable(labor.shortages.top.occ.edr, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+```
+<br>
+
+Just as interesting is comparing the occupations groups across our unemployment data, our "in-demand" job posting data, and the workforce shortage data. This can tell an interesting story.

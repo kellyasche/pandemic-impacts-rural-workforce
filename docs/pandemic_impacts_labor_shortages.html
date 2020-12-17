@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Impacts on workforce shortages</title>
+
+<script src="site_libs/jquery-1.12.4/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="site_libs/anchor-sections-1.0/anchor-sections.js"></script>
+<script src="site_libs/htmlwidgets-1.5.2/htmlwidgets.js"></script>
+<script src="site_libs/d3-5.7.0/d3.min.js"></script>
+<script src="site_libs/d3-lasso-0.0.5/d3-lasso.min.js"></script>
+<link href="site_libs/ggiraphjs-0.3.0/ggiraphjs.min.css" rel="stylesheet" />
+<script src="site_libs/ggiraphjs-0.3.0/ggiraphjs.min.js"></script>
+<script src="site_libs/girafe-binding-0.7.8/girafe.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.16/datatables.js"></script>
+<link href="site_libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet" />
+<script src="site_libs/nouislider-7.0.10/jquery.nouislider.min.js"></script>
+<link href="site_libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet" />
+<script src="site_libs/selectize-0.12.0/selectize.min.js"></script>
+<link href="site_libs/crosstalk-1.1.0.1/css/crosstalk.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.1.0.1/js/crosstalk.min.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#section-TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#section-TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="section-TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">COVID-19 impacts on rural workforce data analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Summary and data overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Pandemic impacts to rural jobs and workforce
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="pandemic_impacts_unemployment.html">Unemployment</a>
+    </li>
+    <li>
+      <a href="pandemic_impacts_jobs.html">Jobs</a>
+    </li>
+    <li>
+      <a href="pandemic_impacts_labor_shortages.html">Laborforce shortages</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="future-rural-jobs-workforce.html">The future of rural jobs and workforce</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="section-header">
+
+
+
+<h1 class="title toc-ignore">Impacts on workforce shortages</h1>
+
+</div>
+
+
+<p><link rel="stylesheet" href="styles.css" type="text/css"></p>
+<p><br></p>
+<p>Although our analysis has shown that there are a significant number of jobs available in Greater Minnesota, the next question is whether employers have access to a “ready-to-work” pool of unemployed individuals. Essentially, do “in-demand” occupations (occupations with many positions available) have access to an unemployment pool within the same occupation or is their a mismatch? The following sections examine the unemployment claims by occupation and the job postings by occupations to determine which occupation group might find it challenging to tap the larger than normal unemployment pool that currently exists.</p>
+<div id="section-how-many-occupation-groups-are-facing-workforce-shortages" class="section level1">
+<h1>How many occupation groups are facing workforce shortages?</h1>
+<p>Despite the significant disruption on the social and economic life of Minnesotan’s and the resulting increases of individuals filing unemployment claims throughout 2020, there continues to be a number of occupations that continue to face workforce shortages.</p>
+<p>The chart below provides the number of occupation groups in each region that had more weekly job positions available than unemployment claims. Although each region has experienced and increase in their occupations in this situation, the most significant growth has occured in Greater Minnesota.</p>
+<p>In Northwest Minnesota, EDR 1 - Northwest, EDR 2 - Headwaters and EDR 4 - West Central have ten or more occupation groups (of 22) that currently have more job positions than individuals filing for continuous unemployment insurance claims. In Southern Minnesota, all of the EDRs have more than 10 occupation groups in the same situation.</p>
+<p><br></p>
+<div id="htmlwidget-8f19a175fe790f464bed" style="width:672px;height:480px;" class="girafe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8f19a175fe790f464bed">{"x":{"html":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557' viewBox='0 0 720.00 720.00'>\n  <g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_1'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='0.00' y='0.00' width='720.00' height='720.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_1' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_1)' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.75' stroke-linejoin='round' stroke-linecap='round'/>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_2'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='0.00' y='0.00' width='720.00' height='720.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_2' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_2)' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3'>\n        <rect x='57.85' y='53.07' width='325.60' height='161.88'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='57.85' y='53.07' width='325.60' height='161.88' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_3' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#FFFFFF' fill-opacity='1' stroke='none'/>\n    <polyline points='57.85,195.33 383.45,195.33' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_4' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='57.85,146.27 383.45,146.27' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_5' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='57.85,97.22 383.45,97.22' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_6' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='133.06,214.95 133.06,53.07' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_7' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='229.71,214.95 229.71,53.07' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_8' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='314.28,214.95 314.28,53.07' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_9' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,146.27 114.94,158.54 157.22,146.27 199.51,146.27 241.79,121.75 284.08,109.48 326.36,84.96 368.65,84.96' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_10' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#B3CDE3' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,183.07 114.94,183.07 157.22,195.33 199.51,170.80 241.79,170.80 284.08,134.01 326.36,134.01 368.65,121.75' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_11' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#8C96C6' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,146.27 114.94,146.27 157.22,146.27 199.51,170.80 241.79,146.27 284.08,134.01 326.36,84.96 368.65,84.96' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_12' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#8856A7' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,195.33 114.94,195.33 157.22,195.33 199.51,195.33 241.79,195.33 284.08,183.07 326.36,170.80 368.65,170.80' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_13' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='none' stroke='#810F7C' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <circle cx='72.65' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_14' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='1' title='EDR 1 - Northwest&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='114.94' cy='158.54' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_15' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='2' title='EDR 1 - Northwest&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 7'/>\n    <circle cx='157.22' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_16' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='3' title='EDR 1 - Northwest&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='199.51' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_17' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='4' title='EDR 1 - Northwest&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='241.79' cy='121.75' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_18' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='5' title='EDR 1 - Northwest&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 10'/>\n    <circle cx='284.08' cy='109.48' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_19' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='6' title='EDR 1 - Northwest&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 11'/>\n    <circle cx='326.36' cy='84.96' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_20' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='7' title='EDR 1 - Northwest&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 13'/>\n    <circle cx='368.65' cy='84.96' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_21' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='8' title='EDR 1 - Northwest&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 13'/>\n    <circle cx='72.65' cy='183.07' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_22' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='9' title='EDR 2 - Headwaters&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='114.94' cy='183.07' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_23' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='10' title='EDR 2 - Headwaters&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='157.22' cy='195.33' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_24' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='11' title='EDR 2 - Headwaters&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='199.51' cy='170.80' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_25' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='12' title='EDR 2 - Headwaters&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='241.79' cy='170.80' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_26' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='13' title='EDR 2 - Headwaters&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='284.08' cy='134.01' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_27' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='14' title='EDR 2 - Headwaters&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='326.36' cy='134.01' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_28' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='15' title='EDR 2 - Headwaters&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='368.65' cy='121.75' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_29' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='16' title='EDR 2 - Headwaters&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 10'/>\n    <circle cx='72.65' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_30' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='25' title='EDR 4 - West Central&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='114.94' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_31' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='26' title='EDR 4 - West Central&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='157.22' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_32' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='27' title='EDR 4 - West Central&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='199.51' cy='170.80' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_33' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='28' title='EDR 4 - West Central&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='241.79' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_34' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='29' title='EDR 4 - West Central&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='284.08' cy='134.01' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_35' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='30' title='EDR 4 - West Central&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='326.36' cy='84.96' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_36' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='31' title='EDR 4 - West Central&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 13'/>\n    <circle cx='368.65' cy='84.96' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_37' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='32' title='EDR 4 - West Central&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 13'/>\n    <circle cx='72.65' cy='195.33' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_38' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='33' title='EDR 5 - North Central&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='114.94' cy='195.33' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_39' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='34' title='EDR 5 - North Central&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='157.22' cy='195.33' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_40' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='35' title='EDR 5 - North Central&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='199.51' cy='195.33' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_41' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='36' title='EDR 5 - North Central&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='241.79' cy='195.33' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_42' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='37' title='EDR 5 - North Central&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='284.08' cy='183.07' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_43' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='38' title='EDR 5 - North Central&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='326.36' cy='170.80' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_44' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='39' title='EDR 5 - North Central&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='368.65' cy='170.80' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_45' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='40' title='EDR 5 - North Central&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <polygon points='359.29,93.66 378.00,93.66 377.91,93.66 378.26,93.64 378.60,93.57 378.92,93.45 379.22,93.28 379.49,93.06 379.72,92.80 379.91,92.50 380.05,92.18 380.13,91.85 380.16,91.50 380.16,91.50 380.16,78.41 380.16,78.41 380.13,78.07 380.05,77.73 379.91,77.41 379.72,77.12 379.49,76.86 379.22,76.64 378.92,76.46 378.60,76.34 378.26,76.27 378.00,76.25 359.29,76.25 359.55,76.27 359.21,76.26 358.86,76.30 358.53,76.40 358.21,76.54 357.93,76.74 357.68,76.98 357.47,77.26 357.31,77.57 357.20,77.90 357.14,78.24 357.13,78.41 357.13,91.50 357.14,91.33 357.14,91.67 357.20,92.02 357.31,92.35 357.47,92.65 357.68,92.93 357.93,93.17 358.21,93.37 358.53,93.52 358.86,93.62 359.21,93.66' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_46' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#FFFFFF' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)'>\n      <text x='360.73' y='90.06' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_47' font-size='10.67pt' fill='#B3CDE3' fill-opacity='1' font-family='Helvetica'>13<\/text>\n    <\/g>\n    <polygon points='359.29,130.45 378.00,130.45 377.91,130.45 378.26,130.43 378.60,130.36 378.92,130.24 379.22,130.07 379.49,129.85 379.72,129.59 379.91,129.29 380.05,128.97 380.13,128.64 380.16,128.29 380.16,128.29 380.16,115.21 380.16,115.21 380.13,114.86 380.05,114.52 379.91,114.20 379.72,113.91 379.49,113.65 379.22,113.43 378.92,113.25 378.60,113.13 378.26,113.06 378.00,113.05 359.29,113.05 359.55,113.06 359.21,113.05 358.86,113.09 358.53,113.19 358.21,113.33 357.93,113.53 357.68,113.77 357.47,114.05 357.31,114.36 357.20,114.69 357.14,115.03 357.13,115.21 357.13,128.29 357.14,128.12 357.14,128.46 357.20,128.81 357.31,129.14 357.47,129.44 357.68,129.72 357.93,129.96 358.21,130.16 358.53,130.31 358.86,130.41 359.21,130.45' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_48' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#FFFFFF' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)'>\n      <text x='360.73' y='126.85' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_49' font-size='10.67pt' fill='#8C96C6' fill-opacity='1' font-family='Helvetica'>10<\/text>\n    <\/g>\n    <polygon points='359.29,93.66 378.00,93.66 377.91,93.66 378.26,93.64 378.60,93.57 378.92,93.45 379.22,93.28 379.49,93.06 379.72,92.80 379.91,92.50 380.05,92.18 380.13,91.85 380.16,91.50 380.16,91.50 380.16,78.41 380.16,78.41 380.13,78.07 380.05,77.73 379.91,77.41 379.72,77.12 379.49,76.86 379.22,76.64 378.92,76.46 378.60,76.34 378.26,76.27 378.00,76.25 359.29,76.25 359.55,76.27 359.21,76.26 358.86,76.30 358.53,76.40 358.21,76.54 357.93,76.74 357.68,76.98 357.47,77.26 357.31,77.57 357.20,77.90 357.14,78.24 357.13,78.41 357.13,91.50 357.14,91.33 357.14,91.67 357.20,92.02 357.31,92.35 357.47,92.65 357.68,92.93 357.93,93.17 358.21,93.37 358.53,93.52 358.86,93.62 359.21,93.66' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_50' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#FFFFFF' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)'>\n      <text x='360.73' y='90.06' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_51' font-size='10.67pt' fill='#8856A7' fill-opacity='1' font-family='Helvetica'>13<\/text>\n    <\/g>\n    <polygon points='363.25,179.50 374.04,179.50 373.95,179.50 374.30,179.49 374.64,179.42 374.97,179.30 375.27,179.12 375.54,178.90 375.77,178.64 375.95,178.35 376.09,178.03 376.17,177.69 376.20,177.34 376.20,177.34 376.20,164.26 376.20,164.26 376.17,163.91 376.09,163.58 375.95,163.26 375.77,162.96 375.54,162.70 375.27,162.48 374.97,162.31 374.64,162.19 374.30,162.12 374.04,162.10 363.25,162.10 363.51,162.12 363.16,162.10 362.82,162.14 362.48,162.24 362.17,162.39 361.88,162.59 361.63,162.83 361.42,163.11 361.26,163.41 361.15,163.74 361.10,164.09 361.09,164.26 361.09,177.34 361.10,177.17 361.10,177.52 361.15,177.86 361.26,178.19 361.42,178.50 361.63,178.78 361.88,179.02 362.17,179.21 362.48,179.36 362.82,179.46 363.16,179.50' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_52' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)' fill='#FFFFFF' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_3)'>\n      <text x='364.69' y='175.90' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_53' font-size='10.67pt' fill='#810F7C' fill-opacity='1' font-family='Helvetica'>6<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_4'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5'>\n        <rect x='57.85' y='242.54' width='325.60' height='161.88'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='57.85' y='242.54' width='325.60' height='161.88' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_54' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#FFFFFF' fill-opacity='1' stroke='none'/>\n    <polyline points='57.85,384.79 383.45,384.79' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_55' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='57.85,335.74 383.45,335.74' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_56' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='57.85,286.68 383.45,286.68' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_57' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='133.06,404.42 133.06,242.54' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_58' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='229.71,404.42 229.71,242.54' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_59' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='314.28,404.42 314.28,242.54' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_60' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,360.27 114.94,372.53 157.22,372.53 199.51,348.00 241.79,348.00 284.08,335.74 326.36,323.48 368.65,311.21' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_61' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#E5F5F9' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,397.06 114.94,397.06 157.22,397.06 199.51,384.79 241.79,397.06 284.08,384.79 326.36,397.06 368.65,384.79' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_62' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#99D8C9' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,372.53 114.94,372.53 157.22,372.53 199.51,372.53 241.79,372.53 284.08,372.53 326.36,360.27 368.65,348.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_63' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='none' stroke='#2CA25F' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <circle cx='72.65' cy='360.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_64' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='41' title='EDR 6E- Southwest Central&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='114.94' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_65' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='42' title='EDR 6E- Southwest Central&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='157.22' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_66' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='43' title='EDR 6E- Southwest Central&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='199.51' cy='348.00' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_67' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='44' title='EDR 6E- Southwest Central&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 7'/>\n    <circle cx='241.79' cy='348.00' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_68' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='45' title='EDR 6E- Southwest Central&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 7'/>\n    <circle cx='284.08' cy='335.74' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_69' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='46' title='EDR 6E- Southwest Central&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='326.36' cy='323.48' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_70' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='47' title='EDR 6E- Southwest Central&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='368.65' cy='311.21' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_71' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='48' title='EDR 6E- Southwest Central&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 10'/>\n    <circle cx='72.65' cy='397.06' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_72' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='57' title='EDR 7E- East Central&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 3'/>\n    <circle cx='114.94' cy='397.06' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_73' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='58' title='EDR 7E- East Central&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 3'/>\n    <circle cx='157.22' cy='397.06' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_74' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='59' title='EDR 7E- East Central&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 3'/>\n    <circle cx='199.51' cy='384.79' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_75' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='60' title='EDR 7E- East Central&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='241.79' cy='397.06' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_76' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='61' title='EDR 7E- East Central&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 3'/>\n    <circle cx='284.08' cy='384.79' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_77' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='62' title='EDR 7E- East Central&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='326.36' cy='397.06' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_78' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='63' title='EDR 7E- East Central&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 3'/>\n    <circle cx='368.65' cy='384.79' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_79' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='64' title='EDR 7E- East Central&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='72.65' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_80' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='65' title='EDR 7W- Central&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='114.94' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_81' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='66' title='EDR 7W- Central&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='157.22' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_82' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='67' title='EDR 7W- Central&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='199.51' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_83' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='68' title='EDR 7W- Central&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='241.79' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_84' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='69' title='EDR 7W- Central&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='284.08' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_85' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='70' title='EDR 7W- Central&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='326.36' cy='360.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_86' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='71' title='EDR 7W- Central&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='368.65' cy='348.00' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_87' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='72' title='EDR 7W- Central&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 7'/>\n    <polygon points='359.29,319.91 378.00,319.91 377.91,319.91 378.26,319.90 378.60,319.83 378.92,319.71 379.22,319.53 379.49,319.31 379.72,319.05 379.91,318.76 380.05,318.44 380.13,318.10 380.16,317.75 380.16,317.75 380.16,304.67 380.16,304.67 380.13,304.32 380.05,303.99 379.91,303.67 379.72,303.37 379.49,303.11 379.22,302.89 378.92,302.72 378.60,302.60 378.26,302.53 378.00,302.51 359.29,302.51 359.55,302.53 359.21,302.51 358.86,302.55 358.53,302.65 358.21,302.80 357.93,303.00 357.68,303.24 357.47,303.52 357.31,303.82 357.20,304.15 357.14,304.50 357.13,304.67 357.13,317.75 357.14,317.58 357.14,317.93 357.20,318.27 357.31,318.60 357.47,318.91 357.68,319.19 357.93,319.43 358.21,319.62 358.53,319.77 358.86,319.87 359.21,319.91' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_88' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#FFFFFF' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)'>\n      <text x='360.73' y='316.31' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_89' font-size='10.67pt' fill='#E5F5F9' fill-opacity='1' font-family='Helvetica'>10<\/text>\n    <\/g>\n    <polygon points='363.25,393.50 374.04,393.50 373.95,393.49 374.30,393.48 374.64,393.41 374.97,393.29 375.27,393.11 375.54,392.89 375.77,392.63 375.95,392.34 376.09,392.02 376.17,391.68 376.20,391.34 376.20,391.34 376.20,378.25 376.20,378.25 376.17,377.90 376.09,377.57 375.95,377.25 375.77,376.95 375.54,376.69 375.27,376.47 374.97,376.30 374.64,376.18 374.30,376.11 374.04,376.09 363.25,376.09 363.51,376.11 363.16,376.09 362.82,376.13 362.48,376.23 362.17,376.38 361.88,376.58 361.63,376.82 361.42,377.10 361.26,377.40 361.15,377.73 361.10,378.08 361.09,378.25 361.09,391.34 361.10,391.16 361.10,391.51 361.15,391.85 361.26,392.18 361.42,392.49 361.63,392.77 361.88,393.01 362.17,393.21 362.48,393.36 362.82,393.45 363.16,393.49' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_90' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#FFFFFF' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)'>\n      <text x='364.69' y='389.90' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_91' font-size='10.67pt' fill='#99D8C9' fill-opacity='1' font-family='Helvetica'>4<\/text>\n    <\/g>\n    <polygon points='363.25,356.70 374.04,356.70 373.95,356.70 374.30,356.69 374.64,356.62 374.97,356.50 375.27,356.32 375.54,356.10 375.77,355.84 375.95,355.55 376.09,355.23 376.17,354.89 376.20,354.54 376.20,354.54 376.20,341.46 376.20,341.46 376.17,341.11 376.09,340.78 375.95,340.46 375.77,340.16 375.54,339.90 375.27,339.68 374.97,339.51 374.64,339.39 374.30,339.32 374.04,339.30 363.25,339.30 363.51,339.32 363.16,339.30 362.82,339.34 362.48,339.44 362.17,339.59 361.88,339.79 361.63,340.03 361.42,340.31 361.26,340.61 361.15,340.94 361.10,341.29 361.09,341.46 361.09,354.54 361.10,354.37 361.10,354.72 361.15,355.06 361.26,355.39 361.42,355.70 361.63,355.98 361.88,356.22 362.17,356.42 362.48,356.56 362.82,356.66 363.16,356.70' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_92' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)' fill='#FFFFFF' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_5)'>\n      <text x='364.69' y='353.10' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_93' font-size='10.67pt' fill='#2CA25F' fill-opacity='1' font-family='Helvetica'>7<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_6'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7'>\n        <rect x='57.85' y='432.00' width='325.60' height='161.88'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='57.85' y='432.00' width='325.60' height='161.88' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_94' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#FFFFFF' fill-opacity='1' stroke='none'/>\n    <polyline points='57.85,574.26 383.45,574.26' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_95' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='57.85,525.20 383.45,525.20' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_96' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='57.85,476.15 383.45,476.15' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_97' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='133.06,593.88 133.06,432.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_98' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='229.71,593.88 229.71,432.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_99' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='314.28,593.88 314.28,432.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_100' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,512.94 114.94,512.94 157.22,525.20 199.51,525.20 241.79,512.94 284.08,512.94 326.36,512.94 368.65,488.41' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_101' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#BDC9E1' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,488.41 114.94,488.41 157.22,488.41 199.51,439.36 241.79,439.36 284.08,439.36 326.36,451.62 368.65,451.62' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_102' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#74A9CF' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='72.65,574.26 114.94,574.26 157.22,537.47 199.51,537.47 241.79,512.94 284.08,500.68 326.36,500.68 368.65,439.36' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_103' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='none' stroke='#0570B0' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <circle cx='72.65' cy='512.94' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_104' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='49' title='EDR 6W- Upper Minnesota Valley&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='114.94' cy='512.94' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_105' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='50' title='EDR 6W- Upper Minnesota Valley&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='157.22' cy='525.20' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_106' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='51' title='EDR 6W- Upper Minnesota Valley&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='199.51' cy='525.20' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_107' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='52' title='EDR 6W- Upper Minnesota Valley&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='241.79' cy='512.94' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_108' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='53' title='EDR 6W- Upper Minnesota Valley&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='284.08' cy='512.94' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_109' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='54' title='EDR 6W- Upper Minnesota Valley&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='326.36' cy='512.94' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_110' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='55' title='EDR 6W- Upper Minnesota Valley&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='368.65' cy='488.41' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_111' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='56' title='EDR 6W- Upper Minnesota Valley&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 11'/>\n    <circle cx='72.65' cy='488.41' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_112' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='73' title='EDR 8 - Southwest&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 11'/>\n    <circle cx='114.94' cy='488.41' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_113' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='74' title='EDR 8 - Southwest&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 11'/>\n    <circle cx='157.22' cy='488.41' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_114' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='75' title='EDR 8 - Southwest&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 11'/>\n    <circle cx='199.51' cy='439.36' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_115' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='76' title='EDR 8 - Southwest&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 15'/>\n    <circle cx='241.79' cy='439.36' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_116' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='77' title='EDR 8 - Southwest&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 15'/>\n    <circle cx='284.08' cy='439.36' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_117' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='78' title='EDR 8 - Southwest&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 15'/>\n    <circle cx='326.36' cy='451.62' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_118' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='79' title='EDR 8 - Southwest&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 14'/>\n    <circle cx='368.65' cy='451.62' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_119' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='80' title='EDR 8 - Southwest&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 14'/>\n    <circle cx='72.65' cy='574.26' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_120' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='81' title='EDR 9 - South Central&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='114.94' cy='574.26' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_121' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='82' title='EDR 9 - South Central&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='157.22' cy='537.47' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_122' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='83' title='EDR 9 - South Central&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 7'/>\n    <circle cx='199.51' cy='537.47' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_123' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='84' title='EDR 9 - South Central&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 7'/>\n    <circle cx='241.79' cy='512.94' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_124' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='85' title='EDR 9 - South Central&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 9'/>\n    <circle cx='284.08' cy='500.68' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_125' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='86' title='EDR 9 - South Central&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 10'/>\n    <circle cx='326.36' cy='500.68' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_126' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='87' title='EDR 9 - South Central&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 10'/>\n    <circle cx='368.65' cy='439.36' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_127' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='88' title='EDR 9 - South Central&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 15'/>\n    <polygon points='359.29,497.11 378.00,497.11 377.91,497.11 378.26,497.10 378.60,497.03 378.92,496.91 379.22,496.73 379.49,496.51 379.72,496.25 379.91,495.96 380.05,495.64 380.13,495.30 380.16,494.95 380.16,494.95 380.16,481.87 380.16,481.87 380.13,481.52 380.05,481.19 379.91,480.87 379.72,480.57 379.49,480.31 379.22,480.09 378.92,479.92 378.60,479.80 378.26,479.73 378.00,479.71 359.29,479.71 359.55,479.73 359.21,479.71 358.86,479.75 358.53,479.85 358.21,480.00 357.93,480.20 357.68,480.44 357.47,480.72 357.31,481.02 357.20,481.35 357.14,481.70 357.13,481.87 357.13,494.95 357.14,494.78 357.14,495.13 357.20,495.47 357.31,495.80 357.47,496.11 357.68,496.39 357.93,496.63 358.21,496.83 358.53,496.97 358.86,497.07 359.21,497.11' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_128' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#FFFFFF' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)'>\n      <text x='360.73' y='493.51' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_129' font-size='10.67pt' fill='#BDC9E1' fill-opacity='1' font-family='Helvetica'>11<\/text>\n    <\/g>\n    <polygon points='359.29,460.32 378.00,460.32 377.91,460.32 378.26,460.31 378.60,460.24 378.92,460.12 379.22,459.94 379.49,459.72 379.72,459.46 379.91,459.17 380.05,458.85 380.13,458.51 380.16,458.16 380.16,458.16 380.16,445.08 380.16,445.08 380.13,444.73 380.05,444.40 379.91,444.08 379.72,443.78 379.49,443.52 379.22,443.30 378.92,443.13 378.60,443.00 378.26,442.94 378.00,442.92 359.29,442.92 359.55,442.94 359.21,442.92 358.86,442.96 358.53,443.06 358.21,443.21 357.93,443.41 357.68,443.65 357.47,443.93 357.31,444.23 357.20,444.56 357.14,444.91 357.13,445.08 357.13,458.16 357.14,457.99 357.14,458.34 357.20,458.68 357.31,459.01 357.47,459.32 357.68,459.60 357.93,459.84 358.21,460.03 358.53,460.18 358.86,460.28 359.21,460.32' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_130' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#FFFFFF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)'>\n      <text x='360.73' y='456.72' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_131' font-size='10.67pt' fill='#74A9CF' fill-opacity='1' font-family='Helvetica'>14<\/text>\n    <\/g>\n    <polygon points='359.29,448.06 378.00,448.06 377.91,448.06 378.26,448.04 378.60,447.98 378.92,447.85 379.22,447.68 379.49,447.46 379.72,447.20 379.91,446.90 380.05,446.58 380.13,446.25 380.16,445.90 380.16,445.90 380.16,432.82 380.16,432.82 380.13,432.47 380.05,432.13 379.91,431.81 379.72,431.52 379.49,431.26 379.22,431.04 378.92,430.86 378.60,430.74 378.26,430.67 378.00,430.66 359.29,430.66 359.55,430.67 359.21,430.66 358.86,430.70 358.53,430.80 358.21,430.95 357.93,431.14 357.68,431.38 357.47,431.66 357.31,431.97 357.20,432.30 357.14,432.64 357.13,432.82 357.13,445.90 357.14,445.73 357.14,446.07 357.20,446.42 357.31,446.75 357.47,447.05 357.68,447.33 357.93,447.57 358.21,447.77 358.53,447.92 358.86,448.02 359.21,448.06' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_132' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)' fill='#FFFFFF' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_7)'>\n      <text x='360.73' y='444.46' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_133' font-size='10.67pt' fill='#0570B0' fill-opacity='1' font-family='Helvetica'>15<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_8'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9'>\n        <rect x='388.93' y='53.07' width='325.60' height='161.88'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='388.93' y='53.07' width='325.60' height='161.88' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_134' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FFFFFF' fill-opacity='1' stroke='none'/>\n    <polyline points='388.93,195.33 714.52,195.33' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_135' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='388.93,146.27 714.52,146.27' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_136' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='388.93,97.22 714.52,97.22' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_137' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='464.13,214.95 464.13,53.07' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_138' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='560.78,214.95 560.78,53.07' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_139' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='645.35,214.95 645.35,53.07' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_140' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='403.72,207.59 446.01,207.59 488.30,183.07 530.58,170.80 572.87,170.80 615.15,170.80 657.44,146.27 699.72,146.27' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_141' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='none' stroke='#FE9929' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <circle cx='403.72' cy='207.59' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_142' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='17' title='EDR 3 - Arrowhead&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 3'/>\n    <circle cx='446.01' cy='207.59' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_143' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='18' title='EDR 3 - Arrowhead&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 3'/>\n    <circle cx='488.30' cy='183.07' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_144' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='19' title='EDR 3 - Arrowhead&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='530.58' cy='170.80' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_145' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='20' title='EDR 3 - Arrowhead&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='572.87' cy='170.80' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_146' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='21' title='EDR 3 - Arrowhead&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='615.15' cy='170.80' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_147' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='22' title='EDR 3 - Arrowhead&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='657.44' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_148' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='23' title='EDR 3 - Arrowhead&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='699.72' cy='146.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_149' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='24' title='EDR 3 - Arrowhead&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <polygon points='694.32,154.98 705.12,154.98 705.03,154.98 705.38,154.96 705.72,154.89 706.04,154.77 706.34,154.59 706.61,154.37 706.84,154.11 707.03,153.82 707.17,153.50 707.25,153.16 707.28,152.82 707.28,152.82 707.28,139.73 707.28,139.73 707.25,139.39 707.17,139.05 707.03,138.73 706.84,138.44 706.61,138.17 706.34,137.96 706.04,137.78 705.72,137.66 705.38,137.59 705.12,137.57 694.32,137.57 694.59,137.59 694.24,137.57 693.89,137.62 693.56,137.71 693.24,137.86 692.96,138.06 692.71,138.30 692.50,138.58 692.34,138.89 692.23,139.22 692.17,139.56 692.16,139.73 692.16,152.82 692.17,152.64 692.17,152.99 692.23,153.33 692.34,153.66 692.50,153.97 692.71,154.25 692.96,154.49 693.24,154.69 693.56,154.84 693.89,154.93 694.24,154.98' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_150' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)' fill='#FFFFFF' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_9)'>\n      <text x='695.76' y='151.38' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_151' font-size='10.67pt' fill='#FE9929' fill-opacity='1' font-family='Helvetica'>8<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_10'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11'>\n        <rect x='388.93' y='242.54' width='325.60' height='161.88'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='388.93' y='242.54' width='325.60' height='161.88' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_152' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#FFFFFF' fill-opacity='1' stroke='none'/>\n    <polyline points='388.93,384.79 714.52,384.79' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_153' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='388.93,335.74 714.52,335.74' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_154' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='388.93,286.68 714.52,286.68' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_155' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='464.13,404.42 464.13,242.54' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_156' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='560.78,404.42 560.78,242.54' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_157' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='645.35,404.42 645.35,242.54' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_158' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='403.72,397.06 446.01,384.79 488.30,384.79 530.58,372.53 572.87,360.27 615.15,360.27 657.44,360.27 699.72,348.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_159' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='none' stroke='#D8B365' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <circle cx='403.72' cy='397.06' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_160' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='97' title='EDR 11 - 7 County Twin Cities&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 3'/>\n    <circle cx='446.01' cy='384.79' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_161' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='98' title='EDR 11 - 7 County Twin Cities&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='488.30' cy='384.79' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_162' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='99' title='EDR 11 - 7 County Twin Cities&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='530.58' cy='372.53' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_163' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='100' title='EDR 11 - 7 County Twin Cities&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='572.87' cy='360.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_164' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='101' title='EDR 11 - 7 County Twin Cities&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='615.15' cy='360.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_165' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='102' title='EDR 11 - 7 County Twin Cities&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='657.44' cy='360.27' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_166' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='103' title='EDR 11 - 7 County Twin Cities&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 6'/>\n    <circle cx='699.72' cy='348.00' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_167' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='104' title='EDR 11 - 7 County Twin Cities&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 7'/>\n    <polygon points='694.32,356.70 705.12,356.70 705.03,356.70 705.38,356.69 705.72,356.62 706.04,356.50 706.34,356.32 706.61,356.10 706.84,355.84 707.03,355.55 707.17,355.23 707.25,354.89 707.28,354.54 707.28,354.54 707.28,341.46 707.28,341.46 707.25,341.11 707.17,340.78 707.03,340.46 706.84,340.16 706.61,339.90 706.34,339.68 706.04,339.51 705.72,339.39 705.38,339.32 705.12,339.30 694.32,339.30 694.59,339.32 694.24,339.30 693.89,339.34 693.56,339.44 693.24,339.59 692.96,339.79 692.71,340.03 692.50,340.31 692.34,340.61 692.23,340.94 692.17,341.29 692.16,341.46 692.16,354.54 692.17,354.37 692.17,354.72 692.23,355.06 692.34,355.39 692.50,355.70 692.71,355.98 692.96,356.22 693.24,356.42 693.56,356.56 693.89,356.66 694.24,356.70' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_168' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)' fill='#FFFFFF' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_11)'>\n      <text x='695.76' y='353.10' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_169' font-size='10.67pt' fill='#D8B365' fill-opacity='1' font-family='Helvetica'>7<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_12'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13'>\n        <rect x='388.93' y='432.00' width='325.60' height='161.88'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='388.93' y='432.00' width='325.60' height='161.88' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_170' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#FFFFFF' fill-opacity='1' stroke='none'/>\n    <polyline points='388.93,574.26 714.52,574.26' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_171' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='388.93,525.20 714.52,525.20' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_172' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='388.93,476.15 714.52,476.15' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_173' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='464.13,593.88 464.13,432.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_174' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='560.78,593.88 560.78,432.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_175' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='645.35,593.88 645.35,432.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_176' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='none' stroke='#B3B3B3' stroke-opacity='1' stroke-width='0.21' stroke-linejoin='round' stroke-linecap='butt'/>\n    <polyline points='403.72,574.26 446.01,574.26 488.30,574.26 530.58,561.99 572.87,561.99 615.15,537.47 657.44,525.20 699.72,476.15' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_177' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='none' stroke='#D7301F' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt'/>\n    <circle cx='403.72' cy='574.26' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_178' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='89' title='EDR 10 - Southeast&amp;lt;br&amp;gt;2020-09-05&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='446.01' cy='574.26' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_179' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='90' title='EDR 10 - Southeast&amp;lt;br&amp;gt;2020-09-12&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='488.30' cy='574.26' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_180' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='91' title='EDR 10 - Southeast&amp;lt;br&amp;gt;2020-09-19&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 4'/>\n    <circle cx='530.58' cy='561.99' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_181' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='92' title='EDR 10 - Southeast&amp;lt;br&amp;gt;2020-09-26&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='572.87' cy='561.99' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_182' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='93' title='EDR 10 - Southeast&amp;lt;br&amp;gt;2020-10-03&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 5'/>\n    <circle cx='615.15' cy='537.47' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_183' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='94' title='EDR 10 - Southeast&amp;lt;br&amp;gt;2020-10-10&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 7'/>\n    <circle cx='657.44' cy='525.20' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_184' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='95' title='EDR 10 - Southeast&amp;lt;br&amp;gt;2020-10-17&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 8'/>\n    <circle cx='699.72' cy='476.15' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_185' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' data-id='96' title='EDR 10 - Southeast&amp;lt;br&amp;gt;2020-10-24&amp;lt;br&amp;gt;Number of occupation groups with workforce shortages: 12'/>\n    <polygon points='690.37,484.85 709.07,484.85 708.99,484.85 709.33,484.84 709.67,484.77 710.00,484.64 710.30,484.47 710.57,484.25 710.80,483.99 710.99,483.69 711.12,483.38 711.20,483.04 711.23,482.69 711.23,482.69 711.23,469.61 711.23,469.61 711.20,469.26 711.12,468.92 710.99,468.60 710.80,468.31 710.57,468.05 710.30,467.83 710.00,467.66 709.67,467.53 709.33,467.46 709.07,467.45 690.37,467.45 690.63,467.46 690.28,467.45 689.94,467.49 689.60,467.59 689.29,467.74 689.00,467.93 688.75,468.17 688.54,468.45 688.38,468.76 688.27,469.09 688.22,469.43 688.21,469.61 688.21,482.69 688.22,482.52 688.22,482.86 688.27,483.21 688.38,483.54 688.54,483.85 688.75,484.12 689.00,484.36 689.29,484.56 689.60,484.71 689.94,484.81 690.28,484.85' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_186' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)' fill='#FFFFFF' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_13)'>\n      <text x='691.81' y='481.25' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_187' font-size='10.67pt' fill='#D7301F' fill-opacity='1' font-family='Helvetica'>12<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_14'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_15'>\n        <rect x='57.85' y='409.89' width='325.60' height='22.11'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='57.85' y='409.89' width='325.60' height='22.11' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_188' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_15)' fill='#D9D9D9' fill-opacity='1' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_15)'>\n      <text x='187.03' y='426.10' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_189' font-size='10.80pt' fill='#1A1A1A' fill-opacity='1' font-family='Arial'>Southwest<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_16'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_17'>\n        <rect x='388.93' y='409.89' width='325.60' height='22.11'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='388.93' y='409.89' width='325.60' height='22.11' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_190' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_17)' fill='#D9D9D9' fill-opacity='1' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_17)'>\n      <text x='519.30' y='426.10' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_191' font-size='10.80pt' fill='#1A1A1A' fill-opacity='1' font-family='Arial'>Southeast<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_18'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_19'>\n        <rect x='57.85' y='220.43' width='325.60' height='22.11'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='57.85' y='220.43' width='325.60' height='22.11' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_192' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_19)' fill='#D9D9D9' fill-opacity='1' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_19)'>\n      <text x='197.44' y='236.64' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_193' font-size='10.80pt' fill='#1A1A1A' fill-opacity='1' font-family='Arial'>Central<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_20'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_21'>\n        <rect x='388.93' y='220.43' width='325.60' height='22.11'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='388.93' y='220.43' width='325.60' height='22.11' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_194' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_21)' fill='#D9D9D9' fill-opacity='1' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_21)'>\n      <text x='463.68' y='236.64' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_195' font-size='10.80pt' fill='#1A1A1A' fill-opacity='1' font-family='Arial'>Seven County Mpls-St Paul<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_22'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_23'>\n        <rect x='57.85' y='30.97' width='325.60' height='22.11'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='57.85' y='30.97' width='325.60' height='22.11' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_196' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_23)' fill='#D9D9D9' fill-opacity='1' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_23)'>\n      <text x='188.24' y='47.17' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_197' font-size='10.80pt' fill='#1A1A1A' fill-opacity='1' font-family='Arial'>Northwest<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_24'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_25'>\n        <rect x='388.93' y='30.97' width='325.60' height='22.11'/>\n      <\/clipPath>\n    <\/defs>\n    <rect x='388.93' y='30.97' width='325.60' height='22.11' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_198' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_25)' fill='#D9D9D9' fill-opacity='1' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_25)'>\n      <text x='520.51' y='47.17' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_199' font-size='10.80pt' fill='#1A1A1A' fill-opacity='1' font-family='Arial'>Northeast<\/text>\n    <\/g>\n    <defs>\n      <clipPath id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26'>\n        <rect x='0.00' y='0.00' width='720.00' height='720.00'/>\n      <\/clipPath>\n    <\/defs>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='109.84' y='609.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_200' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>Sep 15<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='207.70' y='609.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_201' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>Oct 01<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='292.27' y='609.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_202' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>Oct 15<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='440.92' y='609.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_203' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>Sep 15<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='538.77' y='609.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_204' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>Oct 01<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='623.34' y='609.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_205' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>Oct 15<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='32.90' y='200.48' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_206' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>4.0<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='32.90' y='151.43' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_207' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>8.0<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='24.89' y='102.37' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_208' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>12.0<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='32.90' y='389.95' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_209' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>4.0<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='32.90' y='340.89' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_210' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>8.0<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='24.89' y='291.84' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_211' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>12.0<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='32.90' y='579.41' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_212' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>4.0<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='32.90' y='530.36' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_213' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>8.0<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='24.89' y='481.30' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_214' font-size='10.80pt' font-weight='bold' fill='#4D4D4D' fill-opacity='1' font-family='Arial'>12.0<\/text>\n    <\/g>\n    <rect x='57.80' y='642.52' width='656.76' height='72.00' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_215' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <rect x='66.77' y='642.52' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_216' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='68.21' y1='649.72' x2='79.73' y2='649.72' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_217' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#B3CDE3' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#B3CDE3' fill-opacity='1'/>\n    <circle cx='73.97' cy='649.72' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_218' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#B3CDE3' fill-opacity='1' stroke='#B3CDE3' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='66.77' y='656.92' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_219' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='68.21' y1='664.12' x2='79.73' y2='664.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_220' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#8C96C6' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#8C96C6' fill-opacity='1'/>\n    <circle cx='73.97' cy='664.12' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_221' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#8C96C6' fill-opacity='1' stroke='#8C96C6' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='66.77' y='671.32' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_222' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='68.21' y1='678.52' x2='79.73' y2='678.52' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_223' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#FE9929' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#FE9929' fill-opacity='1'/>\n    <circle cx='73.97' cy='678.52' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_224' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#FE9929' fill-opacity='1' stroke='#FE9929' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='66.77' y='685.72' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_225' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='68.21' y1='692.92' x2='79.73' y2='692.92' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_226' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#8856A7' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#8856A7' fill-opacity='1'/>\n    <circle cx='73.97' cy='692.92' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_227' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#8856A7' fill-opacity='1' stroke='#8856A7' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='66.77' y='700.12' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_228' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='68.21' y1='707.32' x2='79.73' y2='707.32' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_229' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#810F7C' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#810F7C' fill-opacity='1'/>\n    <circle cx='73.97' cy='707.32' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_230' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#810F7C' fill-opacity='1' stroke='#810F7C' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='241.94' y='642.52' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_231' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='243.38' y1='649.72' x2='254.90' y2='649.72' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_232' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#E5F5F9' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#E5F5F9' fill-opacity='1'/>\n    <circle cx='249.14' cy='649.72' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_233' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#E5F5F9' fill-opacity='1' stroke='#E5F5F9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='241.94' y='656.92' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_234' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='243.38' y1='664.12' x2='254.90' y2='664.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_235' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#BDC9E1' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#BDC9E1' fill-opacity='1'/>\n    <circle cx='249.14' cy='664.12' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_236' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#BDC9E1' fill-opacity='1' stroke='#BDC9E1' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='241.94' y='671.32' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_237' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='243.38' y1='678.52' x2='254.90' y2='678.52' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_238' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#99D8C9' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#99D8C9' fill-opacity='1'/>\n    <circle cx='249.14' cy='678.52' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_239' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#99D8C9' fill-opacity='1' stroke='#99D8C9' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='241.94' y='685.72' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_240' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='243.38' y1='692.92' x2='254.90' y2='692.92' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_241' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#2CA25F' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#2CA25F' fill-opacity='1'/>\n    <circle cx='249.14' cy='692.92' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_242' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#2CA25F' fill-opacity='1' stroke='#2CA25F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='241.94' y='700.12' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_243' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='243.38' y1='707.32' x2='254.90' y2='707.32' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_244' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#74A9CF' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#74A9CF' fill-opacity='1'/>\n    <circle cx='249.14' cy='707.32' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_245' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#74A9CF' fill-opacity='1' stroke='#74A9CF' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='493.94' y='642.52' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_246' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='495.38' y1='649.72' x2='506.90' y2='649.72' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_247' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#0570B0' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#0570B0' fill-opacity='1'/>\n    <circle cx='501.14' cy='649.72' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_248' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#0570B0' fill-opacity='1' stroke='#0570B0' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='493.94' y='656.92' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_249' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='495.38' y1='664.12' x2='506.90' y2='664.12' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_250' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#D7301F' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#D7301F' fill-opacity='1'/>\n    <circle cx='501.14' cy='664.12' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_251' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#D7301F' fill-opacity='1' stroke='#D7301F' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <rect x='493.94' y='671.32' width='14.40' height='14.40' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_252' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='none' stroke='none'/>\n    <line x1='495.38' y1='678.52' x2='506.90' y2='678.52' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_253' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' stroke='#D8B365' stroke-opacity='1' stroke-width='6.40' stroke-linejoin='round' stroke-linecap='butt' fill='#D8B365' fill-opacity='1'/>\n    <circle cx='501.14' cy='678.52' r='4.27pt' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_254' clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)' fill='#D8B365' fill-opacity='1' stroke='#D8B365' stroke-opacity='1' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round'/>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='92.13' y='654.87' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_255' font-size='10.80pt' font-family='Arial'>EDR 1 - Northwest<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='92.13' y='669.27' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_256' font-size='10.80pt' font-family='Arial'>EDR 2 - Headwaters<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='92.13' y='683.67' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_257' font-size='10.80pt' font-family='Arial'>EDR 3 - Arrowhead<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='92.13' y='698.07' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_258' font-size='10.80pt' font-family='Arial'>EDR 4 - West Central<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='92.13' y='712.47' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_259' font-size='10.80pt' font-family='Arial'>EDR 5 - North Central<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='267.30' y='654.87' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_260' font-size='10.80pt' font-family='Arial'>EDR 6E- Southwest Central<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='267.30' y='669.27' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_261' font-size='10.80pt' font-family='Arial'>EDR 6W- Upper Minnesota Valley<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='267.30' y='683.67' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_262' font-size='10.80pt' font-family='Arial'>EDR 7E- East Central<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='267.30' y='698.07' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_263' font-size='10.80pt' font-family='Arial'>EDR 7W- Central<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='267.30' y='712.47' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_264' font-size='10.80pt' font-family='Arial'>EDR 8 - Southwest<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='519.30' y='654.87' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_265' font-size='10.80pt' font-family='Arial'>EDR 9 - South Central<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='519.30' y='669.27' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_266' font-size='10.80pt' font-family='Arial'>EDR 10 - Southeast<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='519.30' y='683.67' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_267' font-size='10.80pt' font-family='Arial'>EDR 11 - 7 County Twin Cities<\/text>\n    <\/g>\n    <g clip-path='url(#svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_cl_26)'>\n      <text x='57.85' y='20.94' id='svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557_el_268' font-size='16.20pt' font-family='Arial'>Number of occupation groups with more jobs available than unemployment claims<\/text>\n    <\/g>\n  <\/g>\n<\/svg>","js":null,"uid":"svg_ea9aaa8b-e382-4bf2-94dd-60d55544c557","ratio":1,"settings":{"tooltip":{"css":".tooltip_SVGID_ { padding:5px;background:black;color:white;border-radius:2px 2px 2px 2px ; position:absolute;pointer-events:none;z-index:999;}\n","offx":10,"offy":0,"use_cursor_pos":true,"opacity":0.9,"usefill":false,"usestroke":false,"delay":{"over":200,"out":500}},"hover":{"css":".hover_SVGID_ { fill:orange;stroke:gray; }\n","reactive":false},"hoverkey":{"css":".hover_key_SVGID_ { stroke:red; }\n","reactive":false},"hovertheme":{"css":".hover_theme_SVGID_ { fill:green; }\n","reactive":false},"hoverinv":{"css":""},"zoom":{"min":1,"max":1},"capture":{"css":".selected_SVGID_ { fill:red;stroke:gray; }\n","type":"none","only_shiny":true,"selected":[]},"capturekey":{"css":".selected_key_SVGID_ { stroke:gray; }\n","type":"single","only_shiny":true,"selected":[]},"capturetheme":{"css":".selected_theme_SVGID_ { stroke:gray; }\n","type":"single","only_shiny":true,"selected":[]},"toolbar":{"position":"topright","saveaspng":false,"pngname":"diagram"},"sizing":{"rescale":false,"width":1}}},"evals":[],"jsHooks":[]}</script>
+<p><br></p>
+</div>
+<div id="section-which-occupation-groups-are-experiencing-a-shortage-in-their-workforce" class="section level1">
+<h1>Which occupation groups are experiencing a shortage in their workforce?</h1>
+<p>Analysis of the data shows that there were over 20 different occupation groups experiencing a workforce shortage in at least one of our EDRs. The table below provides a list of each of those occupations and the number of EDRs where they are experiencing a workforce shortage.</p>
+<p>What is apparent is that there is significant breadth to the occupation groups that have workforce shortages. Even for occupation groups such as computer and mathematical which one might view as being largely available in the seven county metro is actually facing shortages in 7 of our 13 EDRs.</p>
+<p><br></p>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:100%; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;position: sticky; top:0; background-color: #FFFFFF;">
+Occ Group
+</th>
+<th style="text-align:center;position: sticky; top:0; background-color: #FFFFFF;">
+Number of EDRs with workforce shortage
+</th>
+<th style="text-align:center;position: sticky; top:0; background-color: #FFFFFF;">
+% of EDRs with workforce shortage
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Community and Social Services
+</td>
+<td style="text-align:center;">
+13
+</td>
+<td style="text-align:center;">
+1.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Healthcare Practitioners and Technical
+</td>
+<td style="text-align:center;">
+13
+</td>
+<td style="text-align:center;">
+1.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Architecture and Engineering
+</td>
+<td style="text-align:center;">
+11
+</td>
+<td style="text-align:center;">
+0.8461538
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Life, Physical, and Social Science
+</td>
+<td style="text-align:center;">
+11
+</td>
+<td style="text-align:center;">
+0.8461538
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Personal Care and Service
+</td>
+<td style="text-align:center;">
+9
+</td>
+<td style="text-align:center;">
+0.6923077
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Installation, Maintenance, and Repair
+</td>
+<td style="text-align:center;">
+8
+</td>
+<td style="text-align:center;">
+0.6153846
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Transportation and Material Moving
+</td>
+<td style="text-align:center;">
+8
+</td>
+<td style="text-align:center;">
+0.6153846
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Business and Financial Operations
+</td>
+<td style="text-align:center;">
+7
+</td>
+<td style="text-align:center;">
+0.5384615
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Computer and Mathematical
+</td>
+<td style="text-align:center;">
+7
+</td>
+<td style="text-align:center;">
+0.5384615
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Office and Administrative Support
+</td>
+<td style="text-align:center;">
+7
+</td>
+<td style="text-align:center;">
+0.5384615
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Production
+</td>
+<td style="text-align:center;">
+6
+</td>
+<td style="text-align:center;">
+0.4615385
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Protective Service
+</td>
+<td style="text-align:center;">
+6
+</td>
+<td style="text-align:center;">
+0.4615385
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Sales and Related
+</td>
+<td style="text-align:center;">
+5
+</td>
+<td style="text-align:center;">
+0.3846154
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Arts, Design, Entertainment, Sports, and Media
+</td>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+0.3076923
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Farming, Fishing, and Forestry
+</td>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+0.3076923
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Management
+</td>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+0.3076923
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Healthcare Support
+</td>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+0.2307692
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Legal
+</td>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+0.1538462
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Building &amp; Grounds Cleaning &amp; Maintenance
+</td>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+0.0769231
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Education, Training, and Library
+</td>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+0.0769231
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><br></p>
+<p>Below provides the occupation groups that are facing workforce shortages in each of the EDRs. It also provides how many more job positions were posted compared to the number of unemployment claims for the last week of October. What’s interesting about the list is how some occupations that haven’t been at the top of any of the previous lists are at the top here. For example, transportation and material moving did not have high unemployment claims, was listed in a few rural EDRs as having quite a few positions available (in-demand) and is at the top of the list for workforce shortages in many of our rural EDRs.</p>
+<p><br></p>
+<p><div id="htmlwidget-e7fc5a924f9d704f4fc4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e7fc5a924f9d704f4fc4">{"x":{"filter":"top","filterHTML":"<tr>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none; position: absolute; width: 200px;\">\n      <div data-min=\"1\" data-max=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","data":[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],["Transportation and Material Moving - 92","Healthcare Practitioners and Technical - 44","Personal Care and Service - 34","Community and Social Services - 30","Architecture and Engineering - 23","Business and Financial Operations - 18","Healthcare Support - 16","Office and Administrative Support - 15","Installation, Maintenance, and Repair - 12","Arts, Design, Entertainment, Sports, and Media - 7","Computer and Mathematical - 5","Protective Service - 5","Production - 3"," - "," - "],["Transportation and Material Moving - 227","Healthcare Practitioners and Technical - 124","Office and Administrative Support - 27","Management - 20","Community and Social Services - 19","Computer and Mathematical - 7","Architecture and Engineering - 5","Installation, Maintenance, and Repair - 2","Life, Physical, and Social Science - 2"," - "," - "," - "," - "," - "," - "],["Healthcare Practitioners and Technical - 541","Community and Social Services - 131","Personal Care and Service - 83","Management - 56","Life, Physical, and Social Science - 38","Business and Financial Operations - 35","Computer and Mathematical - 35","Architecture and Engineering - 34"," - "," - "," - "," - "," - "," - "," - "],["Production - 199","Healthcare Practitioners and Technical - 134","Transportation and Material Moving - 115","Office and Administrative Support - 69","Community and Social Services - 35","Sales and Related - 28","Farming, Fishing, and Forestry - 23","Installation, Maintenance, and Repair - 20","Architecture and Engineering - 15","Protective Service - 14","Life, Physical, and Social Science - 4","Legal - 2"," - "," - "," - "],["Healthcare Practitioners and Technical - 110","Community and Social Services - 63","Life, Physical, and Social Science - 5","Architecture and Engineering - 2","Protective Service - 2","Personal Care and Service - 1"," - "," - "," - "," - "," - "," - "," - "," - "," - "],["Farming, Fishing, and Forestry - 182","Transportation and Material Moving - 71","Production - 62","Healthcare Practitioners and Technical - 29","Personal Care and Service - 29","Sales and Related - 29","Community and Social Services - 24","Life, Physical, and Social Science - 8","Installation, Maintenance, and Repair - 5"," - "," - "," - "," - "," - "," - "],["Community and Social Services - 15","Transportation and Material Moving - 15","Building &amp; Grounds Cleaning &amp; Maintenance - 11","Healthcare Practitioners and Technical - 11","Office and Administrative Support - 11","Personal Care and Service - 9","Architecture and Engineering - 4","Business and Financial Operations - 4","Life, Physical, and Social Science - 2","Installation, Maintenance, and Repair - 1"," - "," - "," - "," - "," - "],["Community and Social Services - 131","Healthcare Practitioners and Technical - 83","Production - 32","Architecture and Engineering - 16"," - "," - "," - "," - "," - "," - "," - "," - "," - "," - "," - "],["Transportation and Material Moving - 201","Community and Social Services - 158","Office and Administrative Support - 107","Healthcare Practitioners and Technical - 103","Life, Physical, and Social Science - 13","Sales and Related - 9","Protective Service - 8"," - "," - "," - "," - "," - "," - "," - "," - "],["Production - 185","Healthcare Practitioners and Technical - 109","Transportation and Material Moving - 79","Installation, Maintenance, and Repair - 55","Office and Administrative Support - 52","Business and Financial Operations - 24","Personal Care and Service - 23","Management - 21","Community and Social Services - 17","Sales and Related - 14","Computer and Mathematical - 8","Life, Physical, and Social Science - 7","Arts, Design, Entertainment, Sports, and Media - 6","Healthcare Support - 6"," - "],["Healthcare Practitioners and Technical - 238","Farming, Fishing, and Forestry - 228","Computer and Mathematical - 103","Transportation and Material Moving - 64","Production - 41","Community and Social Services - 38","Installation, Maintenance, and Repair - 26","Life, Physical, and Social Science - 23","Management - 23","Architecture and Engineering - 14","Personal Care and Service - 11","Education, Training, and Library - 3","Legal - 3","Business and Financial Operations - 1","Protective Service - 1"],["Healthcare Practitioners and Technical - 803","Healthcare Support - 124","Sales and Related - 118","Community and Social Services - 66","Computer and Mathematical - 61","Life, Physical, and Social Science - 58","Office and Administrative Support - 55","Personal Care and Service - 52","Architecture and Engineering - 24","Arts, Design, Entertainment, Sports, and Media - 12","Business and Financial Operations - 1"," - "," - "," - "," - "],["Healthcare Practitioners and Technical - 3411","Computer and Mathematical - 2003","Business and Financial Operations - 854","Community and Social Services - 755","Architecture and Engineering - 571","Life, Physical, and Social Science - 248","Installation, Maintenance, and Repair - 1"," - "," - "," - "," - "," - "," - "," - "," - "]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>rank<\/th>\n      <th>EDR 1 - Northwest<\/th>\n      <th>EDR 2 - Headwaters<\/th>\n      <th>EDR 3 - Arrowhead<\/th>\n      <th>EDR 4 - West Central<\/th>\n      <th>EDR 5 - North Central<\/th>\n      <th>EDR 6E- Southwest Central<\/th>\n      <th>EDR 6W- Upper Minnesota Valley<\/th>\n      <th>EDR 7E- East Central<\/th>\n      <th>EDR 7W- Central<\/th>\n      <th>EDR 8 - Southwest<\/th>\n      <th>EDR 9 - South Central<\/th>\n      <th>EDR 10 - Southeast<\/th>\n      <th>EDR 11 - 7 County Twin Cities<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script> <br></p>
+<p>Just as interesting is comparing the occupations groups across our unemployment data, our “in-demand” job posting data, and the workforce shortage data. This can tell an interesting story.</p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#section-TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
