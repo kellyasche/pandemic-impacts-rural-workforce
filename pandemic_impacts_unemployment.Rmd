@@ -162,7 +162,7 @@ oes.pr <- read_csv("Data/Occupations/OES/Master-oes-pr.csv") %>%
 
 <br>
 
-# Unemployment trends{.tabset}
+# How has the pandemic impacted Unemployment trends?{.tabset}
 
 The following charts provide the total number of weekly continuous unemployment insurance claims as a percentage of the average 2019 employment (Bureau of Labor Statistics - Occupational Employment Statistics).
 
@@ -266,7 +266,7 @@ datatable(ui.oes.table.edr, class = "cell-border stripe", filter = "top", rownam
 
 <br>
 
-# Most impacted occupation groups{.tabset}
+# What occupation groups have been most impacted?{.tabset}
 
 The top-5 occupation groups with the highest unemployment claims charts below provides the occupation groups that had the top-5 highest average weekly continuous unemployment claims each month March - October. Since the impacts of the pandemic has been unevenly distributed across the various occupational groups, it's important to see which ones were hit hardest each month. For example, healthcare related occupations were hit hard for a few months in early summer and then unemployment claims dropped significant after that.
 
