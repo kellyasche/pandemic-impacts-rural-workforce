@@ -130,6 +130,22 @@ master.job.postings.with.family <- read_csv("Data/Job postings/master-job-postin
          date = as_date(date),
          posting.date = as_date(posting.date))
 
+master.job.postings.with.family.occ <- read_csv("Data/Job postings/master-job-postings-job-family-and-occ.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+```
+
+```{r master oes objects, include=FALSE, cache=TRUE}
+
+oes.edr <- read_csv("Data/Occupations/OES/Master-oes-edr.csv") %>%
+   mutate(edr = str_replace(edr, "  ", " "),
+          edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota")) %>%
+  left_join(regions, by = "edr") %>%
+  mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
 ```
 
 <br>
@@ -223,7 +239,7 @@ girafe(ggobj = labor.shortages.occ.number.edr.plot, width_svg = 10, height_svg =
 
 <br>
 
-# Which occupation groups are experiencing a shortage in their workforce?
+# Which occupation groups are experiencing a shortage in their workforce?{.tabset}
 
 Analysis of the data shows that there were over 20 different occupation groups experiencing a workforce shortage in at least one of our EDRs. The table below provides  a list of each of those occupations and the number of EDRs where they are experiencing a workforce shortage.
 
@@ -277,6 +293,160 @@ labor.shortages.top.occ.edr <- labor.shortage.edr %>%
 datatable(labor.shortages.top.occ.edr, class = "cell-border stripe", filter = "top", rownames = FALSE,
           options = list(scrollX = TRUE)) 
 ```
+
+<br>
+
+Below are the top specific occupations (6-digit SOC reaching 50% or more of job positions available) 
+
+<br>
+
+```{r prep top SOC positions available, include=FALSE, cache=TRUE}
+
+```
+
+<br>
+
+# How do the top occupations with unemployment claims compare to the top occupations that are in-demand and with top occupations facing workforce shortages?
+
 <br>
 
 Just as interesting is comparing the occupations groups across our unemployment data, our "in-demand" job posting data, and the workforce shortage data. This can tell an interesting story.
+
+<br>
+
+```{r prep unemp vs in-demand vs workforce shortage, include=FALSE, cache=TRUE}
+
+ui.emp.occ.edr <- ui.occ.edr %>%
+  gather(key = "date", value = "ui.claims", 3:(ncol(ui.occ.edr)-1)) %>%
+  mutate(date = as_date(date, format = "%m/%d/%Y"),
+         ui.claims = ifelse(is.na(ui.claims), 0, ui.claims),
+         `Dim Title` = str_replace(`Dim Title`, "Arts, Design, Entertainment, Sports, and Media Occ", "Arts, Design, Entertainment, Sports, and Media Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Building & Grounds Cleaning & Maintenance Occup.", "Building and Grounds Cleaning and Maintenance Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Community and Social Services Occupations", "Community and Social Service Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Education, Training, and Library Occupations", "Educational Instruction and Library Occupations"),
+         `Dim Title` = str_replace(`Dim Title`, "Total Claims", "Total, All Occupations")) %>%
+  filter(`Dim Title` != "Military Specific Occupations") %>%
+  left_join(oes.edr[,c(1,6,7)], by = c("edr", "Dim Title" = "SocTitleL")) %>%
+  mutate(ui.pct.emp = ui.claims / EmpCount,
+         `Dim Title` = as.factor(`Dim Title`)) %>%
+  filter(edr != "Minnesota") %>%
+  droplevels() %>%
+  group_by(`Dim Title`) %>%
+  complete(edr, date, fill = list(ui.claims = 0)) %>%
+  ungroup() %>%
+  rename("shitty.planning.region" = 4,
+         "shitty.EmpCount" = 6) %>%
+  left_join(regions, by = "edr") %>%
+  left_join(oes.edr[,c(1,6,7)], by = c("edr", "Dim Title" = "SocTitleL")) %>%
+  select(2,8,1,3,5,9) %>%
+  mutate(ui.pct.emp = ui.claims / EmpCount)
+
+ui.emp.occ.top10.edr <- ui.emp.occ.edr %>%
+  mutate(month = month(date, label = TRUE)) %>%
+  group_by(edr, planning.region, month, `Dim Title`) %>%
+  summarise(ui.claims = mean(ui.claims),
+            EmpCount = mean(EmpCount)) %>%
+  ungroup() %>%
+  filter(month >= "Mar") %>%
+  group_by(edr, planning.region, month) %>%
+  top_n(n = 11, wt = ui.claims) %>%
+  arrange(desc(ui.claims)) %>%
+  mutate(pct.ui.claims = ui.claims / ui.claims[`Dim Title` == "Total, All Occupations"]) %>%
+  ungroup() %>%
+  filter(`Dim Title` != "Total, All Occupations") %>%
+  group_by(edr, planning.region, month) %>%
+  arrange(desc(ui.claims)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  mutate(`Dim Title` = str_replace(`Dim Title`," Occupations", ""),
+         `Dim Title` = as.factor(`Dim Title`))
+
+ui.top10.table <- ui.emp.occ.top10.edr %>%
+  filter(month == max(ui.emp.occ.top10.edr$month),
+         rank < 11) %>%
+  select(8,1,4) %>%
+  arrange(edr, rank) %>%
+  mutate(edr = paste(edr, " - Top unemployment", sep = "")) %>%
+  spread(key = edr, value = `Dim Title`) 
+
+
+job.postings.occ.group.unique.by.month.edr <- master.job.postings.with.family %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(posting.month) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  uncount(positions)
+
+job.postings.occ.group.sepoctavg.edr <- job.postings.occ.group.unique.by.month.edr %>%
+  filter(posting.month < "Nov") %>%
+  droplevels() %>%
+  group_by(edr, posting.month, Job_Family) %>%
+  summarise(positions = n()) %>%
+  ungroup() %>%
+  complete(edr, posting.month, Job_Family, fill = list(positions = 0)) %>%
+  group_by(edr, posting.month) %>%
+  mutate(total.positions = sum(positions)) %>%
+  ungroup() %>%
+  group_by(edr, Job_Family) %>%
+  summarise(avg.positions = round(mean(positions)),
+            avg.total.positions = round(mean(total.positions))) %>%
+  ungroup() %>%
+  group_by(edr) %>%
+  arrange(desc(avg.positions)) %>%
+  mutate(rank = seq(n()),
+         cumsum = cumsum(avg.positions),
+         pct.total.positions = avg.positions / avg.total.positions,
+         cum.pct.total.positions = cumsum / avg.total.positions) %>%
+  ungroup()
+
+job.postings.occ.group.sepoctavg.top10.edr <- job.postings.occ.group.sepoctavg.edr %>%
+  filter(rank <= 10) %>%
+  select(1,2,3,5,7,8) %>%
+  mutate(label = Job_Family) %>%
+  select(4,1,7) %>%
+  mutate(edr = paste(edr, " - top in-demand")) %>%
+  spread(key = edr, value = label) %>%
+  rename(`rank` = 1)
+
+indemand.top10.table <- job.postings.occ.group.sepoctavg.top10.edr 
+
+labor.shortage.top10.table <- labor.shortage.edr %>%
+  filter(ui.date == max(labor.shortage.edr$ui.date),
+         job.posting.ui.difference > 0) %>%
+  group_by(edr) %>%
+  arrange(desc(job.posting.ui.difference)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  select(1,6,10,12) %>%
+  complete(edr, rank, fill = list(`Dim Title` = "", "job.posting.ui.difference" = "")) %>%
+  mutate(`Dim Title` = ifelse(is.na(`Dim Title`), "", as.character(`Dim Title`))) %>%
+  mutate(label = `Dim Title`) %>%
+  select(1,2,5) %>%
+  mutate(edr = paste(edr, " - labor shortages", sep = "" )) %>%
+  spread(key = edr, value = label) %>%
+  filter(rank < 11)
+
+unemp.indemand.shortage <- ui.top10.table %>%
+  left_join(indemand.top10.table, by = "rank") %>%
+  left_join(labor.shortage.top10.table, by = "rank") 
+```
+
+## Northwest and Northeast Minnesota
+
+```{r table unemployed vs. in demand vs. labor shortage}
+kable(select(unemp.indemand.shortage, 1,2,15,28), format = "html", escape = F, align = "c") %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%
+  scroll_box(width = "100%", height = "100%")
+
+tags$br()
+
+tags$br()
+
+kable(select(unemp.indemand.shortage, 1,5,18,31), format = "html", escape = F, align = "c") %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%
+  scroll_box(width = "100%", height = "100%")
+
+names(unemp.indemand.shortage)
+
+```
+
