@@ -250,7 +250,8 @@ What is apparent is that there is significant breadth to the occupation groups t
 
 ```{r table number of edrs occupation groups are in with shortages}
 occ.group.num.edrs.labor.shortage <- labor.shortage.edr %>%
-  filter(ui.date == max(labor.shortage.edr$ui.date)) %>%
+  filter(ui.date == max(labor.shortage.edr$ui.date),
+         job.posting.ui.difference > 0) %>%
   group_by(`Dim Title`) %>%
   summarise(num.edr = n()) %>%
   ungroup() %>%
@@ -271,6 +272,43 @@ kable(format = "html", occ.group.num.edrs.labor.shortage, escape = F, align = "c
 
 Below provides the occupation groups that are facing workforce shortages in each of the EDRs. It also provides how many more job positions were posted compared to the number of unemployment claims for the last week of October. What's interesting about the list is how some occupations that haven't been at the top of any of the previous lists are at the top here. For example, transportation and material moving did not have high unemployment claims, was listed in a few rural EDRs as having quite a few positions available (in-demand) and is at the top of the list for workforce shortages in many of our rural EDRs.
 
+In the second tab is a table providing the top-5 specific occupations (6-digit SOC) for the top-5 occupation groups with the largest workforce shortage by the end of October. It's worth noting the breadth of occupation groups and occupations even within the top-5 in at least one EDR. Overall, there were 17 different occupation groups that were in the top-5 largest workforce shortages in at least on EDR. Here's a quick summary of the types of jobs available for a majority of the occupation groups.
+
+* Healthcare practitioners and technical (in top-5 for 13/13 EDRs): Nearly all of the positions available were concentrated in two occupations - registered nurses and licensed practical and licensed vocational nurses. However, due to the large need for workers in this occupation group, there is significant need for workers in many occupations within this field.
+
+* Community and social services (in top-5 for 10 of 13 EDRs): Nearly all of the positions available were categorized as social and human service assistant or mental health and substance abuse counselors.
+
+* Transportation and material moving (in top-5 for 8 of 13 EDRs): Most of the positions were concentrated in heavy and tracter-trailer truck driver, light truck or delivery services, drivers or sales workers, as well as laborers and freight, stock, and material movers. 
+
+* Office and administrative support (in top-5 for 5 of 13 EDRs): the occupations available within this field were concentrated in stock clerks and order fillers, first-line supervisors of office and administrative office workers, and customer sales representative.
+
+* Production (in top-5 for 5 of 13 EDRs): For regions with production as one of their top in-demand jobs, most of the positions were concentrated in occupations such as assemblers and fabricators, first-line supervisors, as well as welders, cutters, solderers, and brazers.
+
+* Architecture and engineering (in top-5 of 4 of 13 EDRs) : A majority of these positions were classified as industrial or mechanical engineers. 
+
+* Computer and mathematical (in top-5 of 3 of 13 EDRs): A majority of these occupations were classified as "computer occupations" or "software developers". 
+
+* Life, physical, and social science (in top-5 in 3 of 13 EDRs): the occupations available within this field was dependent on location. In our northern regions, the occupations were primarily revolve around environmental sciences and protection otherwise the majority of jobs were in the medical scientists occupations.
+
+* Personal care and service (in top-5 in 3 of 13 EDRs): most of the positions were concentrated in the personal care aides occupations.
+
+* Farming, fishing and forestry (in top-5 in 2 of 13 EDRs): these occupations were largely in ag related occupations  such as farmworkers and laborers, as well as agricultural equipment operators.
+
+* Management (in top-5 in 2 of 13 EDRs): the occupations listed for these positions were broadly distributed across managers, marketing managers, general and operations managers, sales managers, and medical and health services managers. 
+
+* Protective Service (in top-5 in 1 of 13 EDRs): a majority of the jobs in this field were security guards. 
+
+* Installation, maintenance, and repair (in top-5 in 1 of 13 EDRs): A majority of the jobs in this occupation group were classified as "maintenance and repair workers" or "first-line supervisors of mechanics, installers and repairers".
+
+* Sales and related (in top-5 in 1 of 13 EDRs): most of the positions were concentrated in the first-line supervisors of retail sales workers, retail salespersons and cashiers occupations.
+
+* Business and financial operations (in top-5 in 1 of 13 EDRs): the majority of occupations in this field were classified as "management analysts" or "business operations specialists". 
+
+* Healthcare support (in top-5 in 1 of 13 EDRs): nearly all of the positions available within this field were in the home health aides and nursing assistants occupations.
+
+
+
+
 <br>
 
 ```{r prep top occupations with labor shortages, include=FALSE, cache=TRUE}
@@ -289,128 +327,40 @@ labor.shortages.top.occ.edr <- labor.shortage.edr %>%
   spread(key = edr, value = label)
 ```
 
+## Occupation groups with workforce shortages in each EDR
+
 ```{r table top occupations with labor shortages}
 datatable(labor.shortages.top.occ.edr, class = "cell-border stripe", filter = "top", rownames = FALSE,
           options = list(scrollX = TRUE)) 
 ```
 
-<br>
-
-Below are the top specific occupations (6-digit SOC reaching 50% or more of job positions available) 
+## Top-5 specific occupations (6-digit SOC) available within the top-5 occupation groups with workforce shortages
 
 <br>
 
 ```{r prep top SOC positions available, include=FALSE, cache=TRUE}
-
-```
-
-<br>
-
-# How do the top occupations with unemployment claims compare to the top occupations that are in-demand and with top occupations facing workforce shortages?
-
-<br>
-
-Just as interesting is comparing the occupations groups across our unemployment data, our "in-demand" job posting data, and the workforce shortage data. This can tell an interesting story.
-
-<br>
-
-```{r prep unemp vs in-demand vs workforce shortage, include=FALSE, cache=TRUE}
-
-ui.emp.occ.edr <- ui.occ.edr %>%
-  gather(key = "date", value = "ui.claims", 3:(ncol(ui.occ.edr)-1)) %>%
-  mutate(date = as_date(date, format = "%m/%d/%Y"),
-         ui.claims = ifelse(is.na(ui.claims), 0, ui.claims),
-         `Dim Title` = str_replace(`Dim Title`, "Arts, Design, Entertainment, Sports, and Media Occ", "Arts, Design, Entertainment, Sports, and Media Occupations"),
-         `Dim Title` = str_replace(`Dim Title`, "Building & Grounds Cleaning & Maintenance Occup.", "Building and Grounds Cleaning and Maintenance Occupations"),
-         `Dim Title` = str_replace(`Dim Title`, "Community and Social Services Occupations", "Community and Social Service Occupations"),
-         `Dim Title` = str_replace(`Dim Title`, "Education, Training, and Library Occupations", "Educational Instruction and Library Occupations"),
-         `Dim Title` = str_replace(`Dim Title`, "Total Claims", "Total, All Occupations")) %>%
-  filter(`Dim Title` != "Military Specific Occupations") %>%
-  left_join(oes.edr[,c(1,6,7)], by = c("edr", "Dim Title" = "SocTitleL")) %>%
-  mutate(ui.pct.emp = ui.claims / EmpCount,
-         `Dim Title` = as.factor(`Dim Title`)) %>%
-  filter(edr != "Minnesota") %>%
-  droplevels() %>%
-  group_by(`Dim Title`) %>%
-  complete(edr, date, fill = list(ui.claims = 0)) %>%
-  ungroup() %>%
-  rename("shitty.planning.region" = 4,
-         "shitty.EmpCount" = 6) %>%
-  left_join(regions, by = "edr") %>%
-  left_join(oes.edr[,c(1,6,7)], by = c("edr", "Dim Title" = "SocTitleL")) %>%
-  select(2,8,1,3,5,9) %>%
-  mutate(ui.pct.emp = ui.claims / EmpCount)
-
-ui.emp.occ.top10.edr <- ui.emp.occ.edr %>%
-  mutate(month = month(date, label = TRUE)) %>%
-  group_by(edr, planning.region, month, `Dim Title`) %>%
-  summarise(ui.claims = mean(ui.claims),
-            EmpCount = mean(EmpCount)) %>%
-  ungroup() %>%
-  filter(month >= "Mar") %>%
-  group_by(edr, planning.region, month) %>%
-  top_n(n = 11, wt = ui.claims) %>%
-  arrange(desc(ui.claims)) %>%
-  mutate(pct.ui.claims = ui.claims / ui.claims[`Dim Title` == "Total, All Occupations"]) %>%
-  ungroup() %>%
-  filter(`Dim Title` != "Total, All Occupations") %>%
-  group_by(edr, planning.region, month) %>%
-  arrange(desc(ui.claims)) %>%
-  mutate(rank = seq(n())) %>%
-  ungroup() %>%
-  mutate(`Dim Title` = str_replace(`Dim Title`," Occupations", ""),
-         `Dim Title` = as.factor(`Dim Title`))
-
-ui.top10.table <- ui.emp.occ.top10.edr %>%
-  filter(month == max(ui.emp.occ.top10.edr$month),
-         rank < 11) %>%
-  select(8,1,4) %>%
-  arrange(edr, rank) %>%
-  mutate(edr = paste(edr, " - Top unemployment", sep = "")) %>%
-  spread(key = edr, value = `Dim Title`) 
-
-
-job.postings.occ.group.unique.by.month.edr <- master.job.postings.with.family %>%
+job.postings.soc.unique.by.month.edr <- master.job.postings.with.family.occ %>%
   mutate(posting.month = month(posting.date, label = TRUE)) %>%
   group_by(posting.month) %>%
   distinct(jvid, .keep_all = TRUE) %>%
   ungroup() %>%
-  uncount(positions)
+  uncount(positions) %>%
+  mutate(soc.1 = str_sub(soc, 3, 8),
+         soc.2 = str_sub(soc, 13, 18),
+         soc.3 = str_sub(soc, 23, 28),
+         length = str_length(soc),
+         soc.1 = ifelse(length == 4, "", soc.1))  
 
-job.postings.occ.group.sepoctavg.edr <- job.postings.occ.group.unique.by.month.edr %>%
-  filter(posting.month < "Nov") %>%
-  droplevels() %>%
-  group_by(edr, posting.month, Job_Family) %>%
-  summarise(positions = n()) %>%
-  ungroup() %>%
-  complete(edr, posting.month, Job_Family, fill = list(positions = 0)) %>%
-  group_by(edr, posting.month) %>%
-  mutate(total.positions = sum(positions)) %>%
-  ungroup() %>%
-  group_by(edr, Job_Family) %>%
-  summarise(avg.positions = round(mean(positions)),
-            avg.total.positions = round(mean(total.positions))) %>%
-  ungroup() %>%
-  group_by(edr) %>%
-  arrange(desc(avg.positions)) %>%
-  mutate(rank = seq(n()),
-         cumsum = cumsum(avg.positions),
-         pct.total.positions = avg.positions / avg.total.positions,
-         cum.pct.total.positions = cumsum / avg.total.positions) %>%
-  ungroup()
+soc.codes <- read_xlsx("Data/Job postings/soc-codes.xlsx") %>%
+  mutate(major = ifelse(is.na(major), minor, major),
+         major = ifelse(is.na(major), broad, major),
+         major = ifelse(is.na(major), detailed, major),
+         major = str_replace(major, "-", ""),
+         major = as.factor(major)) %>%
+  select(1,5) %>%
+  rename(soc.code = 1)
 
-job.postings.occ.group.sepoctavg.top10.edr <- job.postings.occ.group.sepoctavg.edr %>%
-  filter(rank <= 10) %>%
-  select(1,2,3,5,7,8) %>%
-  mutate(label = Job_Family) %>%
-  select(4,1,7) %>%
-  mutate(edr = paste(edr, " - top in-demand")) %>%
-  spread(key = edr, value = label) %>%
-  rename(`rank` = 1)
-
-indemand.top10.table <- job.postings.occ.group.sepoctavg.top10.edr 
-
-labor.shortage.top10.table <- labor.shortage.edr %>%
+labor.shortages.top5.occ.list.edr <- labor.shortage.edr %>%
   filter(ui.date == max(labor.shortage.edr$ui.date),
          job.posting.ui.difference > 0) %>%
   group_by(edr) %>%
@@ -422,31 +372,120 @@ labor.shortage.top10.table <- labor.shortage.edr %>%
   mutate(`Dim Title` = ifelse(is.na(`Dim Title`), "", as.character(`Dim Title`))) %>%
   mutate(label = `Dim Title`) %>%
   select(1,2,5) %>%
-  mutate(edr = paste(edr, " - labor shortages", sep = "" )) %>%
-  spread(key = edr, value = label) %>%
-  filter(rank < 11)
+  filter(rank < 6) %>%
+  rename(Job_Family = 3)
 
-unemp.indemand.shortage <- ui.top10.table %>%
-  left_join(indemand.top10.table, by = "rank") %>%
-  left_join(labor.shortage.top10.table, by = "rank") 
+
+job.postings.soc.sepoctavg.edr <- job.postings.soc.unique.by.month.edr %>%
+  select(23, 12,25, 26,27,28) %>%
+  group_by(edr, posting.month, Job_Family) %>%
+  mutate(job.family.positions = n()) %>%
+  ungroup %>%
+  group_by(edr, posting.month) %>%
+  mutate(total.positions = n()) %>%
+  ungroup() %>%
+  gather(key = "soc.level", value = "soc", 4:6) %>%
+  mutate(soc = as.factor(soc)) %>%
+  group_by(edr, soc, posting.month) %>%
+  mutate(soc.positions = n()) %>%
+  distinct(soc, .keep_all = TRUE) %>%
+  ungroup() %>%
+  left_join(soc.codes, by = c("soc" = "soc.code")) %>%
+  mutate(title = ifelse(is.na(title), "Unknown", title)) %>%
+  group_by(edr, soc, title) %>%
+  mutate(avg.soc.position = round(mean(soc.positions))) %>%
+  ungroup() %>%
+  group_by(edr, Job_Family) %>%
+  mutate(avg.job.family.positions = round(mean(job.family.positions))) %>%
+  ungroup() %>%
+  filter(posting.month == "Sep") %>%
+  select(1,2,7,9,10,11,5) %>%
+  mutate(job.family.pct.total = avg.job.family.positions / total.positions,
+         soc.positions.pct.job.family = avg.soc.position / avg.job.family.positions)
+
+labor.shortage.soc.top5.edr <- job.postings.soc.sepoctavg.edr %>%
+  group_by(edr, Job_Family) %>%
+  top_n(n = 5, wt = avg.soc.position) %>%
+  arrange(desc(avg.soc.position)) %>%
+  ungroup() %>%
+  right_join(labor.shortages.top5.occ.list.edr, by = c("edr", "Job_Family")) %>%
+  select(1,10,2,4,5,9) %>%
+  rename("EDR" = 1,
+         "Rank by largest workforce shortage in job family" = 2,
+         "Job Family" = 3,
+         "Occupation Title" = 4,
+         "Avg number of positions available" = 5,
+         "Positions of job as a percent of all openings in job family" = 6)
+
+
 ```
 
-## Northwest and Northeast Minnesota
 
-```{r table unemployed vs. in demand vs. labor shortage}
-kable(select(unemp.indemand.shortage, 1,2,15,28), format = "html", escape = F, align = "c") %>%
-  kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%
-  scroll_box(width = "100%", height = "100%")
+<br>
 
-tags$br()
+```{r detailed occupations of top 5 occupation groups facing workforce shortages}
+datatable(labor.shortage.soc.top5.edr[order(labor.shortage.soc.top5.edr$EDR, labor.shortage.soc.top5.edr$`Rank by largest workforce shortage in job family`), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(0,2)))) %>%
+  formatPercentage(6)
+```
 
-tags$br()
 
-kable(select(unemp.indemand.shortage, 1,5,18,31), format = "html", escape = F, align = "c") %>%
-  kable_styling(bootstrap_options = "striped", full_width = FALSE) %>%
-  scroll_box(width = "100%", height = "100%")
+<br>
 
-names(unemp.indemand.shortage)
+# Occupations with workforce shortages vs surpluses
 
+Summary here
+
+<br>
+
+```{r prep occupations with laborforce shortages vs surpluses, include=FALSE, cache=TRUE}
+labor.surplus.edr <- ui.job.postings.weekly.occ.edr %>%
+  filter(shortage.surplus == "Surplus")
+
+labor.surplus.octavg.edr <- labor.surplus.edr %>%
+  filter(ui.month == "Oct") %>%
+  group_by(edr, planning.region, `Dim Title`) %>%
+  summarise(avg.surplus = round(mean(job.posting.ui.difference))) %>%
+  arrange(avg.surplus) %>%
+  mutate(rank = seq(n()),
+         avg.surplus = avg.surplus * -1) %>%
+  ungroup() %>%
+  filter(rank < 11)
+
+labor.surplus.table <- labor.surplus.octavg.edr %>%
+  mutate(label = paste(`Dim Title`, ": ", avg.surplus, sep = "")) %>%
+  select(1,5,6)
+
+labor.shortage.octavg.edr <- labor.shortage.edr %>%
+  filter(ui.month == "Oct") %>%
+  group_by(edr, planning.region, `Dim Title`) %>%
+  summarise(avg.shortage = round(mean(job.posting.ui.difference))) %>%
+  arrange(desc(avg.shortage)) %>%
+  mutate(rank = seq(n()),
+         avg.shortage = avg.shortage * -1) %>%
+  ungroup()  %>%
+  filter(rank < 11)
+
+labor.shortage.table <- labor.shortage.octavg.edr %>%
+  mutate(label = paste(`Dim Title`, ": ", avg.shortage, sep = "")) %>%
+  select(1,5,6)
+
+labor.shortage.surplus.table <- labor.surplus.table %>%
+  left_join(labor.shortage.table, by = c("edr", "rank")) %>%
+  arrange(edr, rank) %>%
+  rename(EDR = 1,
+         "Rank by severity of shortage or surplus" = 2,
+         "Occupation group and workforce surplus" = 3,
+         "Occupation group and workforce shortage" = 4)
+```
+
+```{r table workforce shortage vs surplus}
+datatable(labor.shortage.surplus.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
 ```
 
