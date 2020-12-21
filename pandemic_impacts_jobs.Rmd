@@ -312,45 +312,7 @@ The charts below provide the number of weekly unique job positions available as 
 
 <br>
 
-```{r prep job postings as a % of UI claims, include=FALSE, cache=TRUE}
-ui.weekly.edr <- ui.edr %>%
-  gather(key = "ui.date", value = "ui.claims", 3:ncol(ui.pr)) %>%
-  mutate(ui.date = mdy(ui.date)) %>%
-  mutate(ui.claims.month = month(ui.date, label = TRUE)) %>%
-  group_by(edr, planning.region, ui.claims.month) %>%
-  arrange(ui.date) %>%
-  mutate(week.num = seq(n())) %>%
-  ungroup()
 
-job.postings.weekly.total.edr <- job.postings.unique.by.week.county %>%
-  group_by(edr, planning.region, posting.date) %>%
-  summarise(job.postings.total = n()) %>%
-  ungroup() %>%
-  mutate(posting.month = month(posting.date, label = TRUE)) %>%
-  group_by(edr,planning.region, posting.month) %>%
-  arrange(posting.date) %>%
-  mutate(week.num = seq(n())) %>%
-  ungroup()
-
-job.postings.weekly.total.ui.edr <- job.postings.weekly.total.edr %>%
-  group_by(edr, planning.region, posting.month) %>%
-  arrange(posting.date) %>%
-  mutate(week.num = seq(n())) %>%
-  ungroup() %>%
-  left_join(ui.weekly.edr, by = c("edr", "planning.region", "week.num", "posting.month" = "ui.claims.month")) %>%
-  drop_na(ui.claims) %>%
-  mutate(job.postings.pct.ui.claims =  job.postings.total / ui.claims,
-         month.week = paste(posting.month, ", ", week.num, sep = ""),
-         data_id = as.character(seq(n())))
-
-job.postings.weekly.total.ui.index.edr <- job.postings.weekly.total.ui.edr %>%
-  group_by(edr, planning.region, `Dim Title`) %>%
-  mutate(job.postings.index = job.postings.total / job.postings.total[posting.date == min(job.postings.weekly.total.ui.edr$posting.date)],
-         ui.claims.index = ui.claims / ui.claims[posting.date == min(job.postings.weekly.total.ui.edr$posting.date)]) %>%
-  ungroup() %>%
-  gather(key = "index.type", value = "index", 13:14)
-
-```
 
 ## Job postings as a % of UI claims - trends
 

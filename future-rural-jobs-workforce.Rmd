@@ -188,6 +188,31 @@ soc.codes <- read_xlsx("Data/Job postings/soc-codes.xlsx") %>%
 
 ```
 
+```{r master ui objects, include=FALSE, cache=TRUE}
+
+ui.occ.edr <- read_csv("Data/UI/Master-ui-claims-occ-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast")) 
+
+```
+
+```{r master job postings objects, include=FALSE, cache=TRUE}
+master.job.postings.with.family <- read_csv("Data/Job postings/master-job-postings-job-family.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+master.job.postings.with.family.occ <- read_csv("Data/Job postings/master-job-postings-job-family-and-occ.csv") %>%
+  mutate(Dem_Desc = fct_relevel(Dem_Desc, "Entirely rural", "Town/rural mix", "Urban/town/rural mix", "Entirely urban"),
+         planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         date = as_date(date),
+         posting.date = as_date(posting.date))
+
+```
+
 <br>
 
 # How has the pandemic impacted employment forecasts?{.tabset}
@@ -248,6 +273,8 @@ datatable(emp.forecast.edr.table, class = "cell-border stripe", filter = "top", 
 
 Although this doesn't provide the severity of the surpluses or shortages in the workforce, it does provide us an idea about which occupations are needed across the entire state and which occupation groups might be needed in some regions and not others.
 
+A review of the date shows that most occupation groups  are projected to be either having a widespread workforce shortage or a widespread workforce surplus. The only occupation groups that will have a workforce surplus in some regions while have a shortage in others are healthcare support, as well as education, training and library. The other occupations are projected to be pretty consistently having a shortage or a surplus in all regions of the state. 
+
 When reviewing the table below, one theme that becomes noticeable is how well the most widespread occupation groups facing projected shortages match the current situation.
 
 These occupations are projected to face workforce shortages across all of Minnesota and is also currently the situation according to the data from previous sections of this outline.
@@ -271,7 +298,7 @@ And then there are occupations that are projected to have workforce surpluses. W
 * Sales related
 * Office and administrative support
 
-Lastly, there are occupations projected to have widespread workforce surpluses but don't really fit the current situation. Although it's challenging to determine why there are differences here, but it's likely due to the way the projections are calculated. For example, these models have indicated a decline in manufacturing for many years but have consitently under-estimated how well manufacturing does from year-to-year. Thus, jobs in production occupations consistently outperform the models. This might be the case with some of these projections.
+Lastly, there are occupations projected to have widespread workforce surpluses but don't really fit the current situation. Although it's challenging to determine why there are differences here, it's likely due to the way the projections are calculated. For example, these models have indicated a decline in manufacturing for many years but have consistently under-estimated how well manufacturing does from year-to-year. Thus, jobs in production occupations consistently outperform the models. This might be the case with some of these projections as well. IF I were to guess, this is likely the case for transportation and material moving.
 
 * Transportation and material moving
 * Production
@@ -307,34 +334,166 @@ datatable(occ.groups.shortage.surplus.num.edrs, class = "cell-border stripe", fi
 ```
 <br>
 
-# Are there any differences in occupation groups facing projected workforce shortages and surpluses across regions of Minnesota?
+# How do current occupation groups facing workforce shortages or surpluses compare to projections?{.tabset}
 
 The table above identified which occupations are either having widespread workforce shortages or surpluses. Any differences between regions in occupations will likely happen in 
+
+[Need to summarise]
+
 <br>
 
-```{r table occ groups shortages surpluses by edr}
+```{r prep comparison of occ group shortages surpluses by edr, include=FALSE, cache=TRUE}
+ui.weekly.occ.edr <- ui.occ.edr %>%
+  gather(key = "ui.date", value = "ui.claims", 3:(max(ncol(ui.occ.edr))-1)) %>%
+  mutate(`Dim Title` = str_replace(`Dim Title`, " Occupations", ""),
+         `Dim Title` = str_replace(`Dim Title`, " Occup.", ""),
+         `Dim Title` = str_replace(`Dim Title`, " Occ", ""),
+         `Dim Title` = as.factor(`Dim Title`)) %>%
+  mutate(ui.date = mdy(ui.date),
+         ui.month = month(ui.date, label = TRUE)) %>%
+  group_by(edr, planning.region, `Dim Title`, ui.month) %>%
+  mutate(week = seq(n())) %>%
+  ungroup() %>%
+  drop_na(ui.claims)
+
+job.postings.weekly.occ.edr <- master.job.postings.with.family %>%
+  group_by(edr, planning.region, posting.date) %>%
+  distinct(jvid, .keep_all = TRUE) %>%
+  ungroup() %>%
+  group_by(edr, planning.region, posting.date, Job_Family) %>%
+  summarise(job.postings = n()) %>%
+  ungroup() %>%
+  mutate(posting.month = month(posting.date, label = TRUE)) %>%
+  group_by(edr, planning.region, Job_Family, posting.month) %>%
+  mutate(week = seq(n())) %>%
+  ungroup() %>%
+  mutate(Job_Family = str_replace(Job_Family, "Community and Social Service", "Community and Social Services"),
+         Job_Family = str_replace(Job_Family, "Building and Grounds Cleaning and Maintenance", "Building & Grounds Cleaning & Maintenance"),
+         Job_Family = as.factor(Job_Family))
+
+
+ui.job.postings.weekly.occ.edr <- ui.weekly.occ.edr %>%
+  full_join(job.postings.weekly.occ.edr[,c(1,2,3,4,5,6,7)], by = c("edr", "planning.region", "ui.month" = "posting.month", "week", `Dim Title` = "Job_Family")) %>%
+  filter(ui.month %in% c("Sep", "Oct"),
+         `Dim Title` != "Total Claims",
+         edr != "Minnesota") %>%
+  group_by(edr, planning.region, ui.month, week) %>%
+  fill(ui.date, .direction = "downup") %>%
+  ungroup() %>%
+  mutate(ui.claims = ifelse(is.na(ui.claims), 0, ui.claims),
+         job.postings = ifelse(is.na(job.postings), 0, job.postings),
+         job.posting.ui.difference = job.postings - ui.claims)
+
+ui.job.postings.octavg.edr <- ui.job.postings.weekly.occ.edr %>%
+  filter(ui.month == "Oct",
+         `Dim Title` != "unknown") %>%
+  group_by(edr, `Dim Title`) %>%
+  summarise(avg.job.posting.ui.difference = round(mean(job.posting.ui.difference))) %>%
+  ungroup() %>%
+  mutate(shortage.surplus = ifelse(avg.job.posting.ui.difference > 0, "Shortage", "Surplus"))
+
+labor.surplus.octavg.edr <- ui.job.postings.octavg.edr %>%
+  filter(shortage.surplus == "Surplus",
+         avg.job.posting.ui.difference < 0) 
+
+labor.surplus.table <- labor.surplus.octavg.edr %>%
+  group_by(edr) %>%
+  arrange(avg.job.posting.ui.difference) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  mutate(avg.job.posting.ui.difference = avg.job.posting.ui.difference * -1,
+         label = paste(`Dim Title`, sep = "")) %>%
+  select(1,5,6)
+
+labor.shortages.occ.octavg <- ui.job.postings.octavg.edr %>%
+  filter(shortage.surplus == "Shortage") %>%
+  mutate(worker.label = avg.job.posting.ui.difference * -1) %>%
+  group_by(edr) %>%
+  arrange(worker.label) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup()
+
+labor.shortage.table <- labor.shortages.occ.octavg %>%
+  mutate(label = paste(`Dim Title`, sep = "")) %>%
+  select(1,6,7)
+
+labor.shortage.surplus.table <- labor.surplus.table %>%
+  left_join(labor.shortage.table, by = c("edr", "rank")) %>%
+  arrange(edr, rank) %>%
+  rename(EDR = 1,
+         "Rank by severity of shortage or surplus" = 2,
+         "Occupation group - current surplus" = 3,
+         "Occupation group - current shortage" = 4)
+  
 occ.groups.annual.shortages.surpluses.edr.table <- occ.groups.annual.shortages.surpluses.edr %>%
   mutate(rank.annual.supply.gap = ifelse(shortage.surplus == "Shortage", annual.supply.gap*-1, annual.supply.gap)) %>%
   group_by(edr, shortage.surplus) %>%
   arrange(desc(rank.annual.supply.gap)) %>%
   mutate(rank = seq(n())) %>%
   ungroup() %>%
-  mutate(label = paste(title, ": ", annual.supply.gap, sep = "")) %>%
+  mutate(label = paste(title, sep = "")) %>%
   select(7,1,5,8) %>%
   spread(key = shortage.surplus, value = label) %>%
   select(2,1,4,3) %>%
   rename(`EDR` = 1,
-         `Rank by serverity of shortage or surplus` = 2,
-         `Occupation group and annual workforce surplus` = 3,
-         `Occupation group and annual workforce shortage` = 4) %>%
+         `Rank by severity of shortage or surplus` = 2,
+         `Occupation group - projected surplus` = 3,
+         `Occupation group - projected shortage` = 4) %>%
   arrange(EDR)
 
-datatable(occ.groups.annual.shortages.surpluses.edr.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
-          options = list(scrollX = TRUE)) 
+occ.group.shortage.surplus.comparison <- occ.groups.annual.shortages.surpluses.edr.table %>%
+  full_join(labor.shortage.surplus.table, by = c("EDR", "Rank by severity of shortage or surplus"))
+
+
+names(labor.shortage.surplus.table)
+names(occ.groups.annual.shortages.surpluses.edr.table)
 
   
 ```
 
+## Occupation groups with workforce shortages comparison - current vs. projections
+
 <br>
+
+```{r table occupation group with workforce shortages comparison}
+occ.group.shortage.comparison.table <- occ.group.shortage.surplus.comparison %>%
+  select(1,2,4,6) %>%
+  rename(`Rank by severity of shortage` = 2)
+
+datatable(occ.group.shortage.comparison.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+```
+
+## Occupation groups with workforce surpluses comparison - current vs. projections
+
+<br>
+
+```{r table occupation group with workforce surplus comparison}
+occ.group.surplus.comparison.table <- occ.group.shortage.surplus.comparison %>%
+  select(1,2,3,5) %>%
+  rename(`Rank by severity of surplus` = 2)
+
+datatable(occ.group.surplus.comparison.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+```
+
+<br>
+
+# What specific occupations are driving the projections?{.tabset}
+
+Summary here
+
+```{r prep specific occs driving projections, include=FALSE, cache=TRUE}
+
+
+```
+
+## Top-5 specific occupations driving projections in the top-5 occupation groups - workforce shortages
+
+<br>
+
+## Top-5 specific occupations driving projections in the top-5 occupation groups - workforce surpluses
+
+
 
 
