@@ -115,3 +115,226 @@ color.pr.edr <- c ("Northwest" = "#4575b4","Northeast" = "#e0f3f8", "Central" = 
 
 ```
 
+```{r master job forecast, include=FALSE, cache=TRUE}
+emp.forecast.edr <- read_xlsx("Data/Forecasts/employment-forecast-edr.xlsx") %>%
+  gather(key = "year", value = "emp", 2:28) %>%
+  mutate(quarter = str_sub(year, 5,6 ),
+         emp.type = str_sub(year, -5, -1),
+         emp.type = str_replace(emp.type, "imate", "base"),
+         emp.type = ifelse(emp.type %in% c("base", "covid"), emp.type, "emp"),
+         emp = round(emp),
+         year = str_sub(year, 1,6),
+         EDR = str_replace(EDR, "MN ", ""),
+         EDR = str_replace(EDR, "  ", " "),
+         EDR = str_replace(EDR, "EDR 1 - NW", "EDR 1 - Northwest"),
+         EDR = str_replace(EDR, "EDR 6E - SW Central", "EDR 6E- Southwest Central"),
+         EDR = str_replace(EDR, "EDR 6W - Upper MN Valley", "EDR 6W- Upper Minnesota Valley"),
+         EDR = str_replace(EDR, "EDR 7E - East Central", "EDR 7E- East Central"),
+         EDR = str_replace(EDR, "EDR 7W - Central", "EDR 7W- Central"),
+         EDR = str_replace(EDR, "EDR 8 - SW", "EDR 8 - Southwest"),
+         EDR = str_replace(EDR, "EDR 10 - SE", "EDR 10 - Southeast"),
+         EDR = str_replace(EDR, "EDR 11 - Metro", "EDR 11 - 7 County Twin Cities"),
+         EDR = fct_relevel(EDR, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota")) %>% 
+  filter(EDR != "Minnesota")
+
+emp.forecast.added.edr <- emp.forecast.edr %>%
+  mutate(year = as.factor(year)) %>%
+  filter(year %in% c("2020Q1", "2021Q2")) %>%
+  droplevels() %>%
+  group_by(EDR) %>%
+  complete(year, emp.type, fill = list(emp = NA)) %>%
+  ungroup() %>%
+  filter(year != "2021Q2") %>%
+  group_by(EDR) %>%
+  mutate(emp = ifelse(is.na(emp), emp[emp.type == "emp"], emp)) %>%
+  ungroup() %>%
+  filter(emp.type != "emp")
+
+master.emp.forecast.edr <- emp.forecast.edr %>%
+  rbind(emp.forecast.added.edr) %>%
+  mutate(year = lubridate::yq(year),
+         emp.type = as.factor(emp.type),
+         emp.type = ifelse(emp.type == "emp", "Historical",
+                           ifelse(emp.type == "covid", "Event-based model", "Baseline model")),
+         emp.type = as.factor(emp.type),
+         emp.type = relevel(emp.type, "Historical", "Baseline model", "Event-based model"),
+         quarter = ifelse(is.na(quarter), "Q1", quarter))
+
+forecast.final.project <- master.emp.forecast.edr %>%
+  filter(year == max(master.emp.forecast.edr$year),
+         quarter == "Q2") %>%
+  group_by(EDR) %>%
+  mutate(baseline.event.diff = emp[emp.type == "Event-based model"] - emp[emp.type == "Baseline model"],
+         baselind.event.diff.pct = baseline.event.diff / emp[emp.type == "Baseline model"]) %>%
+  ungroup()
+```
+
+```{r master forecast occ gaps, include=FALSE, cache=TRUE}
+master.emp.forecast.occ.edr <- read_csv("Data/Forecasts/Master-occ-gaps-5yr-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+```
+
+```{r master occ list, include=FALSE, cache=TRUE}
+soc.codes <- read_xlsx("Data/Job postings/soc-codes.xlsx") %>%
+  mutate(major = ifelse(is.na(major), minor, major),
+         major = ifelse(is.na(major), broad, major),
+         major = ifelse(is.na(major), detailed, major),
+         major = str_replace(major, "-", ""),
+         major = as.factor(major)) %>%
+  select(1,5) %>%
+  rename(soc.code = 1) %>%
+  mutate(title = str_replace(title, " Occupations", ""))
+
+```
+
+<br>
+
+# How has the pandemic impacted employment forecasts?{.tabset}
+
+Below are the number of jobs projected over the next 5 years in each EDR. There are three different datasets here, essentially. The first are the historical job numbers for each EDR before January 2020. After that, there are two projection models. The first model labeled "Baseline" were the job projections before the pandemic began. The second model labeled "Event-based" are the new projections since the pandemic has begun. This projection was modeled in quarter 3 of 2020. 
+
+As the charts show, the pandemic caused a severe disruption in the number of jobs compared to what was projected for 2020. The event-based model currently projects a relatively quick recovery (v-shape) but a continued gap between what is projected now that the pandemic has occurred compared to the models before the pandemic began. This is due to the likely closure and slow recovery of the business directly impacted by the pandemic such as restaurants, bars, retail and other related industries.
+
+<br>
+
+## Trends
+
+<br>
+
+```{r chart emp forecast}
+emp.forecast.edr.plot <- ggplot(master.emp.forecast.edr, aes(year, emp, color = emp.type, group = emp.type)) +
+  facet_wrap(~EDR, ncol = 2, scales = "free_y") +
+  geom_line(size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = emp, tooltip = paste(EDR, "\nYear: ", year, "\nQuarter: ", quarter, "\nDate set: ", emp.type, "\nNumber of employees: ", comma(emp, accuracy = 1), sep = ""))) +
+  geom_label_repel(data = filter(master.emp.forecast.edr, year == "2025-04-01"), aes(x = year, y = emp, label = comma(emp, accuracy = 1)), show.legend = FALSE, size = 5) +
+  scale_y_continuous(labels=scales::comma)+
+  theme_line+
+  scale_color_manual(values = brewer.pal(n = 3, "PuBu"),
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18)) +
+  labs(x="", y = "", color="", title = "Employment forecast before and after pandemic")
+
+girafe(ggobj = emp.forecast.edr.plot, width_svg = 10, height_svg = 15) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+```
+
+## Table
+
+<br>
+
+```{r table emp forecast}
+emp.forecast.edr.table <- master.emp.forecast.edr %>%
+  select(1,2,4,5,3) %>%
+  arrange(EDR, year, quarter, emp.type) %>%
+  rename("Year" = 2,
+         "Quarter" = 3,
+         "Model type" = 4,
+         "Number of jobs" = 5) 
+
+datatable(emp.forecast.edr.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) %>%
+  formatCurrency(5, "")
+
+```
+
+<br>
+
+# What occupations are projected to face workforce shortages and surpluses over the net 5-years?
+
+Although this doesn't provide the severity of the surpluses or shortages in the workforce, it does provide us an idea about which occupations are needed across the entire state and which occupation groups might be needed in some regions and not others.
+
+When reviewing the table below, one theme that becomes noticeable is how well the most widespread occupation groups facing projected shortages match the current situation.
+
+These occupations are projected to face workforce shortages across all of Minnesota and is also currently the situation according to the data from previous sections of this outline.
+
+* Healthcare practitioners and technical
+* Community and social service
+* Architecture and engineering
+* Computer and mathematical
+* Life, physical and social science
+
+There are a few occupations that are projected to be facing widespread workforce shortages across Minnesota but are currently facing surpluses in some of our EDRs. This means that these occupations are expected to recover soon from any pandemic impacts.
+
+* Management
+* Business and financial operations
+* Installation, maintenance and repair
+* Healthcare support
+
+And then there are occupations that are projected to have workforce surpluses. What's interesting is that most of these are currently facing surpluses. This indicates that this isn't going to change anytime soon.
+
+* Food preparation and serving related
+* Sales related
+* Office and administrative support
+
+Lastly, there are occupations projected to have widespread workforce surpluses but don't really fit the current situation. Although it's challenging to determine why there are differences here, but it's likely due to the way the projections are calculated. For example, these models have indicated a decline in manufacturing for many years but have consitently under-estimated how well manufacturing does from year-to-year. Thus, jobs in production occupations consistently outperform the models. This might be the case with some of these projections.
+
+* Transportation and material moving
+* Production
+* Personal care and service
+* Farming, fishing and forestry
+* Protective service.
+
+<br>
+
+```{r prep occupation groups facing workforce shortages, include=FALSE, cache=TRUE}
+occ.groups.annual.shortages.surpluses.edr <- master.emp.forecast.occ.edr %>%
+  group_by(edr, soc.level) %>%
+  summarise(annual.supply.gap = sum(`Annual Supply Gap`, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(soc.level = paste(soc.level, "0000", sep = "")) %>%
+  left_join(soc.codes, by = c("soc.level" = "soc.code")) %>%
+  mutate(title = as.factor(title)) %>%
+  mutate(shortage.surplus = ifelse(annual.supply.gap > 0, "Surplus", "Shortage")) %>%
+  filter(annual.supply.gap != 0)
+
+occ.groups.shortage.surplus.num.edrs <- occ.groups.annual.shortages.surpluses.edr %>%
+  group_by(title, shortage.surplus) %>%
+  summarise(num.edrs = n()) %>%
+  ungroup() %>%
+  complete(title, shortage.surplus, fill = list(num.edrs = 0)) %>%
+  spread(key = shortage.surplus, value = num.edrs) %>%
+  arrange(desc(Shortage), Surplus)
+```
+
+```{r table num of edrs occupation groups facing shortages or surpluses}
+datatable(occ.groups.shortage.surplus.num.edrs, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE))
+```
+<br>
+
+# Are there any differences in occupation groups facing projected workforce shortages and surpluses across regions of Minnesota?
+
+The table above identified which occupations are either having widespread workforce shortages or surpluses. Any differences between regions in occupations will likely happen in 
+<br>
+
+```{r table occ groups shortages surpluses by edr}
+occ.groups.annual.shortages.surpluses.edr.table <- occ.groups.annual.shortages.surpluses.edr %>%
+  mutate(rank.annual.supply.gap = ifelse(shortage.surplus == "Shortage", annual.supply.gap*-1, annual.supply.gap)) %>%
+  group_by(edr, shortage.surplus) %>%
+  arrange(desc(rank.annual.supply.gap)) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  mutate(label = paste(title, ": ", annual.supply.gap, sep = "")) %>%
+  select(7,1,5,8) %>%
+  spread(key = shortage.surplus, value = label) %>%
+  select(2,1,4,3) %>%
+  rename(`EDR` = 1,
+         `Rank by serverity of shortage or surplus` = 2,
+         `Occupation group and annual workforce surplus` = 3,
+         `Occupation group and annual workforce shortage` = 4) %>%
+  arrange(EDR)
+
+datatable(occ.groups.annual.shortages.surpluses.edr.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE)) 
+
+  
+```
+
+<br>
+
+

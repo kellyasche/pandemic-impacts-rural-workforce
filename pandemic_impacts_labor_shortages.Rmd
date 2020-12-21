@@ -479,22 +479,46 @@ datatable(labor.shortage.soc.top5.edr[order(labor.shortage.soc.top5.edr$EDR, lab
 
 <br>
 
-# Occupations with workforce shortages vs surpluses
+# Comparing occupations with workforce shortages vs surpluses
 
-The table below provides each occupation group that had a workforce shortage or a workforce surplus throughout the month of October. What you will find is that the major disruptions the pandemic has had to certain industries has impacted occupations with a skill set that don't necessarily align with occupations that are still hiring. For the most part, the pandemic has impacted low-wage and low-skill occupations while not necessarily disrupting industries that require higher skills. Other occupations that are experiencing significant workforce surpluses are typically "seasonal" such as construction and extraction, farming fishing and forestry, and building & grounds cleaning and maintenance.  This leaves  employers attempting to engage an unemployment pool that may require significant retraining.
+The table below provides each occupation group that had a workforce shortage or a workforce surplus throughout the month of October. Overall, comparing the occupations reveals a couple themes in rural Minnesota. 
 
+First, the major disruptions the pandemic has had to certain industries has caused high unemployment and workforce surpluses in occupations that require a lower skill-set in every region. These occupation groups were also some of the most severe in terms of experiencing workforce surpluses. 
 
++ Food preparation and serving related
++ Sales and related
++ Office and administrative support
 
-Prominent occupations with workforce surpluses that are more seasonal in nature
-* Construction and extraction
-* Farming, fishing and forestry
-* Building & grounds cleaning & maintenance
-* Production
+The skills needed for this type of employment don't typically align well with the skills required for many of the jobs in occupation groups that were experiencing a workforce shortage in nearly every region.
 
-Prominent occupations with workforce surpluses likely impacted by the pandemic
-* Food preparation and serving related
-* Sales and related
-* 
++ Healthcare practitioners and technical
++ community and social services
++ Architecture and engineering
++ Computer and mathematical
++ Life, physical, and social science
+
+Other occupation groups that were experiencing more unemployment claims than job positions available but requires training and education;
+
++ Education, training, and library.
++ Healthcare support
+
+In addition, October is a transition month where many industries begin laying off workers for the winter. There were quite a few occupation groups that were experiencing a higher number of unemployment claims than job postings but is typical for this time of year across nearly all regions.
+
++ Production
++ Construction and extraction
++ Farming, fishing and forestry
++ Building and grounds cleaning and maintenance
+
+There are a few other occupation groups that show up in the rural EDRs that are a bit more complicated. These occupation groups can either show up as experiencing workforce surpluses or shortages depending on the region. It's challenging to determine what's causing this but it's likely due to the differences in industry make-up of each region and they specific types of product or service being produced. For example, transportation and material moving in Northwest and Southwest might be experiencing more unemployment claims in October due to their being less agricultural product to move while in Central these type of jobs are more linked to commerce and are gearing up for he holiday season.
+
++ Transportation and material moving
++ Management
++ Business and financial operations
++ Installation, maintenance and repair
++ Arts, design, entertainment, sports, and media
++ Personal care and service
+
+What this tells us is that even though there are some main occupations being impacted by the pandemic, the workforce and industry dynamics are still quite complicated and nuanced. Even in a significant global even such as we are in right now, each workforce development organization is facing their own unique situation requiring individual strategies and programming. 
 
 <br>
 
