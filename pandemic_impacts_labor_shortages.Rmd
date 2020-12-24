@@ -232,6 +232,8 @@ labor.surpluses.occ.number.edr <- labor.surplus.edr %>%
   ungroup() %>% 
   mutate(data_id = seq(n()))
 
+
+
 ```
 
 ```{r chart labor shortages occ number edr}
@@ -312,6 +314,20 @@ labor.shortage.octavg.occ.num.edr <- ui.job.postings.octavg.edr %>%
          `Number of EDRs with workforce shortage` = 2,
          `% of EDRs with workforce shortage` = 3)
 
+labor.surplus.octavg.occ.num.edr <- ui.job.postings.octavg.edr %>%
+  filter(shortage.surplus == "Surplus") %>%
+  group_by(`Dim Title`) %>%
+  distinct(edr) %>%
+  summarise(num.edrs = n()) %>%
+  ungroup() %>%
+  mutate(pct.edrs = num.edrs / 13) %>%
+  arrange(desc(num.edrs)) %>%
+  rename(`Occ Group` = 1,
+         `Number of EDRs with workforce surplus` = 2,
+         `% of EDRs with workforce surplus` = 3)
+
+write_csv(labor.surplus.octavg.occ.num.edr, "Data/Forecasts/current-occ-group-surplus-num-edrs.csv")
+write_csv(labor.shortage.octavg.occ.num.edr, "Data/Forecasts/current-occ-group-shortage-num-edrs.csv")
 
 kable(format = "html", labor.shortage.octavg.occ.num.edr, escape = F, align = "c", caption = "Number of EDRs where an occupation group was facing a workforce shortage using the average difference between job postings and unemployment claims through the month of October.") %>%
   kable_styling(bootstrap_options = "striped", full_width = TRUE) %>%

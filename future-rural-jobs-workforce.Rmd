@@ -309,6 +309,10 @@ Lastly, there are occupations projected to have widespread workforce surpluses b
 <br>
 
 ```{r prep occupation groups facing workforce shortages, include=FALSE, cache=TRUE}
+current.occ.groups.shortage <- read_csv("Data/Forecasts/current-occ-group-shortage-num-edrs.csv")
+
+current.occ.groups.surplus <- read_csv("Data/Forecasts/current-occ-group-surplus-num-edrs.csv")
+
 occ.groups.annual.shortages.surpluses.edr <- master.emp.forecast.occ.edr %>%
   group_by(edr, soc.level) %>%
   summarise(annual.supply.gap = sum(`Annual Supply Gap`, na.rm = TRUE)) %>%
@@ -325,20 +329,88 @@ occ.groups.shortage.surplus.num.edrs <- occ.groups.annual.shortages.surpluses.ed
   ungroup() %>%
   complete(title, shortage.surplus, fill = list(num.edrs = 0)) %>%
   spread(key = shortage.surplus, value = num.edrs) %>%
-  arrange(desc(Shortage), Surplus)
+  arrange(desc(Shortage), Surplus) %>%
+  mutate(title = str_replace(title, "Community and Social Service", "Community and Social Services"),
+         title = str_replace(title, "Building and Grounds Cleaning and Maintenance", "Building & Grounds Cleaning & Maintenance"))
+
+names(occ.groups.shortage.surplus.num.edrs)
+
+current.projected.occ.group.shortage.surplus.num.edrs <- occ.groups.shortage.surplus.num.edrs %>%
+  full_join(current.occ.groups.shortage, by = c("title" = "Occ Group")) %>%
+  full_join(current.occ.groups.surplus, by = c("title" = "Occ Group")) %>%
+  select(1,4,2,6,3) %>%
+  rename("Occ group" = 1,
+         "Number of EDRs currently with workforce shortages" = 2,
+         "Number of EDRs with projected workforce shortages" = 3,
+         "Number of EDRs currently with workforce surpluses" = 4,
+         "Number of EDRs with projected workforce surpluses" = 5)
 ```
 
+<br>
+
 ```{r table num of edrs occupation groups facing shortages or surpluses}
-datatable(occ.groups.shortage.surplus.num.edrs, class = "cell-border stripe", filter = "top", rownames = FALSE,
+datatable(select(current.projected.occ.group.shortage.surplus.num.edrs, 1,3,5), class = "cell-border stripe", filter = "top", rownames = FALSE,
+          options = list(scrollX = TRUE))
+```
+
+So how does this compare to the number of EDRs that each occ groups is currently experiencing shortages and surpluses? There is quite a bit of overlap. 
+
+Here are the occupation groups that are currently experiencing widespread shortages or surpluses and are projected to continue.
+
+* Shortages
+  + Healthcare practitioners and technical
+  + Community and social services
+  + Life, physical and social sciences
+  + Architecture and engineering
+
+* Surpluses
+  + Food preparation and serving related
+  + Production
+  + Sales and related
+  + Building and grounds cleaning and maintenance
+  + Office and administrative support
+  + Farming, fishing and forestry
+  + Protective service
+  + Personal care and service
+
+Here are the occupation groups that are expected to "recover", meaning they currently have widespread workforce surpluses but are projected to have shortages again.
+
+* Healthcare support
+* Construction and extraction (likely high surplus due to seasonal nature of work)
+* Education, training and library
+* Business and financial operations
+* Installation, maintenance and repair
+* Computer and mathematical
+* Legal
+
+This confirms that the need to provide resources to our workforce development organizations is necessary. We are going to have a lot of people on unemployment from occupations that don't require a lot of skills that are necessary for jobs that will be available. 
+
+This is going to be particularly true in rural areas that are more reliant on tourism, recreation and service industries.
+
+
+<br>
+
+```{r table comparing occ groups and number of EDRs projected vs. current}
+datatable(current.projected.occ.group.shortage.surplus.num.edrs, class = "cell-border stripe", filter = "top", rownames = FALSE,
           options = list(scrollX = TRUE))
 ```
 <br>
 
-# How do current occupation groups facing workforce shortages or surpluses compare to projections?{.tabset}
+# How does the list of current occupation groups facing workforce shortages or surpluses compare to projections?{.tabset}
 
-The table above identified which occupations are either having widespread workforce shortages or surpluses. Any differences between regions in occupations will likely happen in 
+The tables below provide a the list of occupation groups that are currently (October) experiencing workforce shortages or surpluses ranked by severity along with the list of occupation groups that are projected to experience annual workforce shortages or surpluses over the next 5 years. 
 
-[Need to summarise]
+If we use the table from above as guidance, we know that the occupation groups that are expected to transition from currently experiencing workforce surpluses to shortages is where we will see the greatest difference. Here's where those transitions will occur.
+
+* Healthcare support
+  + EDR 2 - Headwaters, EDR 3 - Arrowhead, EDR 4 - West Central, EDR 5 - North Central, EDR 6E - Southwest Central, EDR 6W - Upper Minnesota Valley, EDR 7
+* Construction and extraction (likely high surplus due to seasonal nature of work)
+* Education, training and library
+* Business and financial operations
+* Installation, maintenance and repair
+* Computer and mathematical
+* Legal
+
 
 <br>
 
@@ -424,6 +496,13 @@ labor.shortage.surplus.table <- labor.surplus.table %>%
          "Rank by severity of shortage or surplus" = 2,
          "Occupation group - current surplus" = 3,
          "Occupation group - current shortage" = 4)
+
+current.labor.shortage.surplus <- labor.shortage.surplus.table %>%
+  gather(key = "shortage.surplus", value = "occ.group", 3,4) %>%
+  mutate(shortage.surplus = str_sub(shortage.surplus, 20, -1)) %>%
+  rename("current.shortage.surplus"= 3)
+
+names(current.labor.shortage.surplus)
   
 occ.groups.annual.shortages.surpluses.edr.table <- occ.groups.annual.shortages.surpluses.edr %>%
   mutate(rank.annual.supply.gap = ifelse(shortage.surplus == "Shortage", annual.supply.gap*-1, annual.supply.gap)) %>%
@@ -439,43 +518,191 @@ occ.groups.annual.shortages.surpluses.edr.table <- occ.groups.annual.shortages.s
          `Rank by severity of shortage or surplus` = 2,
          `Occupation group - projected surplus` = 3,
          `Occupation group - projected shortage` = 4) %>%
-  arrange(EDR)
+  arrange(EDR) %>%
+  gather(key = "shortage.surplus", value = "occ.group", 3,4) %>%
+  mutate(shortage.surplus = str_sub(shortage.surplus, 20, -1)) %>%
+  rename("projected.shortage.surplus" = 3)
 
 occ.group.shortage.surplus.comparison <- occ.groups.annual.shortages.surpluses.edr.table %>%
-  full_join(labor.shortage.surplus.table, by = c("EDR", "Rank by severity of shortage or surplus"))
+  select(1,3,4) %>%
+  mutate(occ.group =str_replace(occ.group, "Building and Grounds Cleaning and Maintenance", "Building & Grounds Cleaning & Maintenance	"),
+         occ.group = str_replace(occ.group, "Community and Social Service", "Community and Social Services")) %>%
+  full_join(current.labor.shortage.surplus[,c(1,3,4)], by = c("EDR", "occ.group")) %>%
+  filter(!is.na(occ.group)) %>%
+  mutate(current.label = current.shortage.surplus,
+         current.label = str_replace(current.label, "current ", ""),
+         current.label = ifelse(is.na(current.label), "stable", current.label),
+         projected.label = projected.shortage.surplus,
+         projected.label = str_replace(projected.label, "projected ", ""),
+         projected.label = ifelse(is.na(projected.label), "stable", projected.label),
+         transition = ifelse(projected.label == current.label, "No transition", "Transition"),
+         transition.type = ifelse(current.label == "surplus" & projected.label == "surplus", "Continued surplus",
+                                  ifelse(current.label == "surplus" & projected.label == "shortage", "Surplus to shortage",
+                                         ifelse(current.label == "shortage" & projected.label == "surplus", "Shortage to surplus",
+                                                ifelse(current.label == "shortage" & projected.label == "shortage", "Continued shortage",
+                                                       ifelse(current.label == "stable" & projected.label == "surplus", "Stable to surplus",
+                                                              ifelse(current.label == "stable" & projected.label == "stable", "Continued stable",
+                                                                     ifelse(current.label == "stable" & projected.label == "shortage", "Stable to shortage",
+                                                                            ifelse(current.label == "surplus" & projected.label == "stable", "Surplus to stable", "Shortage to stable")))))))),
+         transition.type = as.factor(transition.type),
+         occ.group = as.factor(occ.group))
 
-
-names(labor.shortage.surplus.table)
-names(occ.groups.annual.shortages.surpluses.edr.table)
+names(occ.group.shortage.surplus.comparison)
 
   
 ```
 
-## Occupation groups with workforce shortages comparison - current vs. projections
+## Occupation groups transitioning from surpluses to shortages
 
 <br>
 
-```{r table occupation group with workforce shortages comparison}
-occ.group.shortage.comparison.table <- occ.group.shortage.surplus.comparison %>%
-  select(1,2,4,6) %>%
-  rename(`Rank by severity of shortage` = 2)
+```{r table occupation group transition from surplus to shortage}
+occ.group.surplus.to.shortages <- occ.group.shortage.surplus.comparison %>%
+  filter(transition.type == "Surplus to shortage") %>%
+  select(1,3,8)
 
-datatable(occ.group.shortage.comparison.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
-          options = list(scrollX = TRUE)) 
+datatable(occ.group.surplus.to.shortages[order(occ.group.surplus.to.shortages$occ.group, occ.group.surplus.to.shortages$EDR), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(1))))
+
 ```
 
-## Occupation groups with workforce surpluses comparison - current vs. projections
+## Occupation groups transitioning from shortages to surpluses
 
 <br>
 
-```{r table occupation group with workforce surplus comparison}
-occ.group.surplus.comparison.table <- occ.group.shortage.surplus.comparison %>%
-  select(1,2,3,5) %>%
-  rename(`Rank by severity of surplus` = 2)
+```{r table occupation group transitioning from shortage to surpluses}
+occ.group.shortage.to.surplus <- occ.group.shortage.surplus.comparison %>%
+  filter(transition.type == "Shortage to surplus") %>%
+  select(1,3,8)
 
-datatable(occ.group.surplus.comparison.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
-          options = list(scrollX = TRUE)) 
+datatable(occ.group.shortage.to.surplus[order(occ.group.shortage.to.surplus$occ.group, occ.group.shortage.to.surplus$EDR), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(1))))
+
 ```
+
+## Occupation groups with no transition - continued shortages
+
+<br>
+
+```{r table occupation group continued shortages}
+occ.group.continued.shortages <- occ.group.shortage.surplus.comparison %>%
+  filter(transition.type == "Continued shortage") %>%
+  select(1,3,8)
+
+datatable(occ.group.continued.shortages[order(occ.group.continued.shortages$occ.group, occ.group.continued.shortages$EDR), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(1))))
+
+```
+
+## Occupation with no transition - continued surpluses
+
+<br>
+
+```{r table occupation group with continued surpluses}
+occ.group.continued.surplus <- occ.group.shortage.surplus.comparison %>%
+  filter(transition.type == "Continued surplus") %>%
+  select(1,3,8)
+
+datatable(occ.group.continued.surplus[order(occ.group.continued.surplus$occ.group, occ.group.continued.surplus$EDR), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(1))))
+
+```
+
+## Occupation groups transitioning from stable to surpluses
+
+<br>
+
+```{r table occupation group stable to surpluses}
+occ.group.stable.to.surplus <- occ.group.shortage.surplus.comparison %>%
+  filter(transition.type == "Stable to surplus") %>%
+  select(1,3,8)
+
+datatable(occ.group.stable.to.surplus[order(occ.group.stable.to.surplus$occ.group, occ.group.stable.to.surplus$EDR), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(1))))
+
+```
+
+## Occupation groups transitioning from stable to shortages
+
+<br>
+
+```{r table occupation group stable to shortages}
+occ.group.stable.to.shortage <- occ.group.shortage.surplus.comparison %>%
+  filter(transition.type == "Stable to shortage") %>%
+  select(1,3,8)
+
+datatable(occ.group.stable.to.shortage[order(occ.group.stable.to.shortage$occ.group, occ.group.stable.to.shortage$EDR), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(1))))
+
+
+```
+## Occupation groups transitioning from surpluses to stable
+
+<br>
+
+```{r table occupation group surplus to stable}
+occ.group.surplus.to.stable <- occ.group.shortage.surplus.comparison %>%
+  filter(transition.type == "Surplus to stable") %>%
+  select(1,3,8)
+
+datatable(occ.group.surplus.to.stable[order(occ.group.surplus.to.stable$occ.group, occ.group.surplus.to.stable$EDR), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(1))))
+
+```
+## Occupation groups transitioning from shortages to stable
+
+<br>
+
+```{r table occupation group with shortages to stable}
+occ.group.shortage.to.stable <- occ.group.shortage.surplus.comparison %>%
+  filter(transition.type == "Shortage to stable") %>%
+  select(1,3,8)
+
+datatable(occ.group.shortage.to.stable[order(occ.group.shortage.to.stable$occ.group, occ.group.shortage.to.stable$EDR), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(1))))
+
+```
+
 
 <br>
 
@@ -484,7 +711,46 @@ datatable(occ.group.surplus.comparison.table, class = "cell-border stripe", filt
 Summary here
 
 ```{r prep specific occs driving projections, include=FALSE, cache=TRUE}
+forecast.top5.shortage.surplus.list <- occ.groups.annual.shortages.surpluses.edr %>%
+  mutate(label = ifelse(shortage.surplus == "Shortage", annual.supply.gap * -1, annual.supply.gap)) %>%
+  group_by(edr, shortage.surplus) %>%
+  arrange(desc(label)) %>%
+  top_n(n = 5, wt = label) %>%
+  mutate(rank = seq(n())) %>%
+  ungroup() %>%
+  filter(rank <= 5) %>%
+  mutate(soc.level = str_sub(soc.level, 1, 2))
 
+forecast.soc.top5.occ <- master.emp.forecast.occ.edr %>%
+  mutate(soc.level = as.character(soc.level)) %>% 
+  right_join(forecast.top5.shortage.surplus.list[,c(1,2,4,7,5)], by = c("edr", "soc.level")) %>%
+  select(12,1,2,3,11,13,14,15,16) %>%
+  filter(`Annual Supply Gap` != 0) %>%
+  mutate(rank.annual.supply.gap = ifelse(`Annual Supply Gap` < 0, `Annual Supply Gap` * -1, `Annual Supply Gap`)) %>%
+  group_by(edr, shortage.surplus, soc.level) %>%
+  top_n(n = 5, wt = rank.annual.supply.gap) %>%
+  arrange(desc(rank.annual.supply.gap)) %>%
+  mutate(soc.rank = seq(n())) %>%
+  ungroup() %>%
+  arrange(edr, shortage.surplus, rank, soc.rank)
+
+forecast.soc.top5.occ.shortage.table <- forecast.soc.top5.occ %>%
+  filter(shortage.surplus == "Shortage") %>%
+  select(1,8,7,3,4) %>%
+  rename("EDR" = 1,
+         "Rank by largest workforce shortage in occupation group" = 2,
+         "Occupation group" = 3,
+         "Occupation title" = 4,
+         "Projected annual shortage" = 5)
+
+forecast.soc.top5.occ.surplus.table <- forecast.soc.top5.occ %>%
+  filter(shortage.surplus == "Surplus") %>%
+  select(1,8,7,3,4) %>%
+  rename("EDR" = 1,
+         "Rank by largest workforce surplus in occupation group" = 2,
+         "Occupation group" = 3,
+         "Occupation title" = 4,
+         "Projected annual surplus" = 5)
 
 ```
 
@@ -492,8 +758,29 @@ Summary here
 
 <br>
 
+```{r table projected workforce shortage specific soc}
+datatable(forecast.soc.top5.occ.shortage.table[order(forecast.soc.top5.occ.shortage.table$EDR, forecast.soc.top5.occ.shortage.table$`Rank by largest workforce shortage in occupation group`), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(0,2))))
+```
+
 ## Top-5 specific occupations driving projections in the top-5 occupation groups - workforce surpluses
 
+<br>
+
+```{r table projected workforce surplus specific soc}
+datatable(forecast.soc.top5.occ.surplus.table[order(forecast.soc.top5.occ.surplus.table$EDR, forecast.soc.top5.occ.surplus.table$`Rank by largest workforce surplus in occupation group`), ],
+          class = "cell-border stripe",
+          filter = "top",
+          rownames = FALSE,
+          extensions = "RowGroup",
+          options = list(scrollX = TRUE,
+                         rowGroup = list(dataSrc = c(0,2))))
+```
 
 
 
