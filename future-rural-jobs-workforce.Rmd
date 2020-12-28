@@ -112,6 +112,8 @@ color.edr <- c("EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6"
 
 color.pr.edr <- c ("Northwest" = "#4575b4","Northeast" = "#e0f3f8", "Central" = "#fee090", "Seven County Mpls-St Paul" = "#d73027", "Southwest" = "#91bfdb", "Southeast" = "#fc8d59", "Minnesota" = "black", "EDR 1 - Northwest" = "#b3cde3", "EDR 2 - Headwaters" = "#8c96c6", "EDR 3 - Arrowhead" = "#fe9929", "EDR 4 - West Central" = "#8856a7", "EDR 5 - North Central" = "#810f7c", "EDR 6E- Southwest Central" = "#e5f5f9", "EDR 6W- Upper Minnesota Valley" = "#bdc9e1", "EDR 7E- East Central" = "#99d8c9", "EDR 7W- Central" = "#2ca25f", "EDR 8 - Southwest" = "#74a9cf", "EDR 9 - South Central" = "#0570b0", "EDR 10 - Southeast" = "#d7301f", "EDR 11 - 7 County Twin Cities" = "#d8b365")
 
+mn_edrs <- st_read("Data/Shapefiles/RDO shapefiles/rdo.shp", quiet = TRUE) %>%
+  ms_simplify(keep = .01, keep_shapes = TRUE)
 
 ```
 
@@ -386,7 +388,7 @@ Here are the occupation groups that are currently experiencing widespread shorta
   + Protective service
   + Personal care and service
   
-Again, it's worth mentioning here but occupation groups such as production and farming, fishing and forestry may be facing shortages in the future. And one of the big reasons they are currently facing surpluses is because of the season in which the current unemployment data was pulled.
+Again, it's worth mentioning here but projections for occupation groups such as production and farming, fishing and forestry may be wrong. They have been in the past. So instead of facing surpluses they may be facing shortages in the future. And one of the big reasons they are *currently* facing surpluses is because of the season in which the current unemployment data was pulled.
 
 Here are the occupation groups that are expected to "recover", meaning they currently have widespread workforce surpluses but are projected to have shortages again.
 
@@ -411,10 +413,17 @@ datatable(current.projected.occ.group.shortage.surplus.num.edrs, class = "cell-b
 ```
 <br>
 
-# Which EDRs will see transition from workforce surpluses to shortages and vice-versa?
+# Which EDRs will see transition from workforce surpluses to shortages and vice-versa?{.tabset}
 
-The table below provides the number of occupation groups that will experience each type of transition category for each EDR.
+The maps and table below provides the number of occupation groups that will experience each type of transition category for each EDR.
 
+The transition categories are defined as occupations that will experience either a shortage, a surplus, or stable (neither stable or a surplus) in October and in projections. The category before the "-" is the October situation of the occ groups while the category listed after the "-" are the projections.
+
+Not surprisingly, comparing the situations show that EDRs have many occupation groups that had a workforce shortage in October and that will continue, or they have too many workers (surplus) and that will also continue. These two situations typically make up 5 to 12 occupation groups in each EDR.
+
+However, a few transitions do show up across the EDRs among a higher number of occupation groups. A transition among occupation groups from having too many workers in October to having not enough workers in the future occurs among 4 to 8 occupation groups particularly on the east side of Minnesota. In north central and north eastern Minnesota, they are projected to have 4 occupation groups transition from having too many workers in October to being stable in the future. Lastly, in southwest Minnesota, they are projected to have 4 occupation groups transition from having a stable number of workers to having a workforce shortage in the future for 4 occupation groups.
+
+One other transition category worth mentioning are the occupation groups that had a workforce shortage in October but are projected to experience a surplus. There were about 1 to 3 occupation groups in this category and were mainly on the western side of Minnesota.
 <br>
 
 ```{r prep comparison of occ group shortages surpluses by edr, include=FALSE, cache=TRUE}
@@ -565,6 +574,51 @@ names(occ.group.shortage.surplus.comparison)
   
 ```
 
+## EDR maps
+
+<br>
+
+```{r map num occ groups transition category}
+num.occ.group.transition.category.map <- num.occ.group.transition.category %>%
+  select(1,2,3,4) %>%
+  complete(EDR, transition.type, fill = list(transition.count = 0, pct.occ.groups = 0)) %>%
+  mutate(RDCNUM = str_sub(EDR, 5,6),
+         RDCNUM = trimws(RDCNUM, which = "both"),
+         transition.count.bins = cut(transition.count,
+                                     breaks = c(-1, 0, 3, 6, 9, 20),
+                                     labels = c("0 occ groups", "1-3 occ groups", "4-6 occ groups", "7-9 occ groups", "10-12 occ groups")),
+         transition.type = ifelse(transition.type == "Continued shortage", "Not enough workers - continued",
+                                  ifelse(transition.type == "Continued surplus", "Too many workers - continued",
+                                         ifelse(transition.type == "Shortage to stable", "Not enough workers - stable",
+                                                ifelse(transition.type == "Shortage to surplus", "Not enough workers - too many workers",
+                                                       ifelse(transition.type == "Stable to shortage", "Stable - not enough workers",
+                                                              ifelse(transition.type == "Stable to surplus", "Stable - too many wokers",
+                                                                     ifelse(transition.type == "Surplus to shortage", "Too many workers - not enough workers", "Too many workers - stable"))))))),
+         transition.type = as.factor(transition.type),
+         transition.type = fct_relevel(transition.type, "Not enough workers - continued", "Not enough workers - too many workers", "Not enough workers - stable",  "Too many workers - continued", "Too many workers - not enough workers", "Too many workers - stable", "Stable - not enough workers", "Stable - too many workers")) %>%
+  left_join(mn_edrs[,c(5,10)], by = "RDCNUM")
+
+mycolors <- brewer.pal(n = 5, "PuBu")
+
+names(mycolors) <- levels(num.occ.group.transition.category.map$transition.count.bins)
+
+num.occ.group.transition.category.plot <- ggplot(num.occ.group.transition.category.map) +
+  facet_wrap(~transition.type, ncol = 2) +
+  geom_sf_interactive(color = "grey85", aes(geometry = geometry, fill = transition.count.bins, data_id = EDR, tooltip = paste(EDR, "\nTransition type: ", transition.type, "\nNumber of occs with transition type: ", transition.count, sep = ""))) +
+  theme_sf+
+  scale_fill_manual(values = mycolors) +
+  labs(title = paste("Number of occupation groups transition type - ", "\n", num.occ.group.transition.category.map$transition.type, sep = "")) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = num.occ.group.transition.category.plot, height_svg = 20, width_svg = 10) %>%
+  girafe_options(opts_sizing(rescale = FALSE))
+
+
+```
+
+## Table
+
 ```{r table num occ groups transition category}
 num.occ.group.transition.category.table <- num.occ.group.transition.category %>%
   select(1,2,3,4) %>%
@@ -586,174 +640,182 @@ num.occ.group.transition.category.table <- num.occ.group.transition.category %>%
 datatable(num.occ.group.transition.category.table, class = "cell-border stripe", filter = "top", rownames = FALSE,
           options = list(scrollX = TRUE)) 
 
-
-
-names(num.occ.group.transition.category.table)
 ```
 
 
-# Not done yet here{.tabset}
+# What occupation groups are driving the transitions?
+
+The table below provides each EDR and each occupation group along with their transition category from October 2020 to projections. 
+
+Overall, what this table tells us is that not only do the occupation groups that are experienced a workforce shortage in October and are projected to continue this shortage require significant training or licensing, occupation groups that had too many workers in October or just enough workers but are projected to experience shortages also will require significant training and licensing. The occupation groups with too many workers all require less training and licensing on a whole.
+
+From previous tables we already know which occupation groups are facing workforce shortages or surpluses across all of Minnesota and are projected to continue to be in these situations.
+
+* Shortages
+  + Healthcare practitioners and technical
+  + Community and social services
+  + Life, physical and social sciences
+  + Architecture and engineering
+
+* Surpluses
+  + Food preparation and serving related
+  + Production
+  + Sales and related
+  + Building and grounds cleaning and maintenance
+  + Office and administrative support
+  + Farming, fishing and forestry
+  + Protective service
+  + Personal care and service
+  
+As before, it's worth mentioning that some of the occupation groups that are currently experiencing workforce shortages are due to the seasonal nature of the industries within which those occupations occupy. And, that the projections for these occupation groups may be incorrect. This includes production, and farming, fishing and forestry.
+
+In the previous section above, there were a few transition categories that are projected to occur in a number of occupation groups. Here's a breakdown of the occupations listed as having this particular transition and the number of EDRs in which they are projected to experience this situation.
+
+* Management (12 EDRs)
+* Business and financial operations (8 EDRs)
+* Healthcare support (8 EDRs)
+* Computer and mathematical (5 EDRs)
+* Education, training and library (5 EDRs)
+* Installation, maintenance and repair (4 EDRs)
+* Legal (4 EDRs)
+* Architecture and engineering (2 EDRs)
+
+One occupation group expected to transition from surpluses to shortages as well, but is largely due to the seasonality of the work and experienced surpluses in October is construction and extraction (7 EDRs). This particular occupation group could really be listed as having a workforce shortage currently and is projected to as well. 
+
+Another transition category that has a number of occupation groups projected to experience is from having too many workers to being stable. Here are the occupation groups that are projected to experience this transition along with the number of EDRs in which they are projected to experience this. All of these occupations require education, training and/or licensing. 
+
+* Building and grounds cleaning and maintenance (12 EDRs)
+* Arts, design, entertainment, sports and media (4 EDRs)
+* Education, training and library (2 EDRs)
+* Healthcare support (2 EDRs)
+* Installation, maintenance and repair (2 EDRs)
+* Legal (1 EDR)
+* Business and financial operations (1 EDR)
+
+Again, construction and extraction (5 EDRs) appear in this category and might as well be labeled as being stable entirely.
+
+There were a few occupation groups projected to experience is going from having just enough workers to not enough. Here are those occupation groups. All of the occupation groups require training, education and/or licensing.
+
+* Legal (3 EDRs)
+* Installation maintenance and repair (2 EDRs)
+* Computer and mathematical (1 EDR)
+* Architecture and engineering (1 EDR)
+* Life, physical, and social science (1 EDR)
+
+Lastly, there was the transition from not having enough workers to having too many which was occuring a few occupation groups on the western side of Minnesota. Here are those occupation groups.
+
+* Transportation and material moving (6 EDRs)
+* Personal care and service (5 EDRs)
+* Farming, fishing and forestry (2 EDRs)
+* Protective service (1 EDR)
+* Office and administrative support (1 EDR)
+
+I'm a bit leary of the list above. Again, I think the projections have been underestimating the need for transportation and material moving for years, particularly in rural Minnesota.
 
 <br>
 
-
-## Occupation groups transitioning from surpluses to shortages
-
-<br>
-
-```{r table occupation group transition from surplus to shortage}
-occ.group.surplus.to.shortages <- occ.group.shortage.surplus.comparison %>%
-  filter(transition.type == "Surplus to shortage") %>%
+```{r prep occupation groups and transition category}
+occ.group.transition.category <- occ.group.shortage.surplus.comparison %>%
+  mutate(transition.type = ifelse(transition.type == "Continued shortage", "Not enough workers - continued",
+                                  ifelse(transition.type == "Continued surplus", "Too many workers - continued",
+                                         ifelse(transition.type == "Shortage to stable", "Not enough workers - stable",
+                                                ifelse(transition.type == "Shortage to surplus", "Not enough workers - too many workers",
+                                                       ifelse(transition.type == "Stable to shortage", "Stable - not enough workers",
+                                                              ifelse(transition.type == "Stable to surplus", "Stable - too many wokers",
+                                                                     ifelse(transition.type == "Surplus to shortage", "Too many workers - not enough workers", "Too many workers - stable"))))))),
+         transition.type = as.factor(transition.type),
+         transition.type = fct_relevel(transition.type, "Not enough workers - continued", "Not enough workers - too many workers", "Not enough workers - stable",  "Too many workers - continued", "Too many workers - not enough workers", "Too many workers - stable", "Stable - not enough workers", "Stable - too many workers")) %>%
   select(1,3,8)
+```
 
-datatable(occ.group.surplus.to.shortages[order(occ.group.surplus.to.shortages$occ.group, occ.group.surplus.to.shortages$EDR), ],
+```{r table occ group transition category}
+datatable(occ.group.transition.category[order(occ.group.transition.category$EDR, occ.group.transition.category$transition.type), ],
           class = "cell-border stripe",
           filter = "top",
           rownames = FALSE,
           extensions = "RowGroup",
           options = list(scrollX = TRUE,
-                         rowGroup = list(dataSrc = c(1))))
+                         rowGroup = list(dataSrc = c(0,2))))
 
 ```
-
-## Occupation groups transitioning from shortages to surpluses
-
-<br>
-
-```{r table occupation group transitioning from shortage to surpluses}
-occ.group.shortage.to.surplus <- occ.group.shortage.surplus.comparison %>%
-  filter(transition.type == "Shortage to surplus") %>%
-  select(1,3,8)
-
-datatable(occ.group.shortage.to.surplus[order(occ.group.shortage.to.surplus$occ.group, occ.group.shortage.to.surplus$EDR), ],
-          class = "cell-border stripe",
-          filter = "top",
-          rownames = FALSE,
-          extensions = "RowGroup",
-          options = list(scrollX = TRUE,
-                         rowGroup = list(dataSrc = c(1))))
-
-```
-
-## Occupation groups with no transition - continued shortages
-
-<br>
-
-```{r table occupation group continued shortages}
-occ.group.continued.shortages <- occ.group.shortage.surplus.comparison %>%
-  filter(transition.type == "Continued shortage") %>%
-  select(1,3,8)
-
-datatable(occ.group.continued.shortages[order(occ.group.continued.shortages$occ.group, occ.group.continued.shortages$EDR), ],
-          class = "cell-border stripe",
-          filter = "top",
-          rownames = FALSE,
-          extensions = "RowGroup",
-          options = list(scrollX = TRUE,
-                         rowGroup = list(dataSrc = c(1))))
-
-```
-
-## Occupation with no transition - continued surpluses
-
-<br>
-
-```{r table occupation group with continued surpluses}
-occ.group.continued.surplus <- occ.group.shortage.surplus.comparison %>%
-  filter(transition.type == "Continued surplus") %>%
-  select(1,3,8)
-
-datatable(occ.group.continued.surplus[order(occ.group.continued.surplus$occ.group, occ.group.continued.surplus$EDR), ],
-          class = "cell-border stripe",
-          filter = "top",
-          rownames = FALSE,
-          extensions = "RowGroup",
-          options = list(scrollX = TRUE,
-                         rowGroup = list(dataSrc = c(1))))
-
-```
-
-## Occupation groups transitioning from stable to surpluses
-
-<br>
-
-```{r table occupation group stable to surpluses}
-occ.group.stable.to.surplus <- occ.group.shortage.surplus.comparison %>%
-  filter(transition.type == "Stable to surplus") %>%
-  select(1,3,8)
-
-datatable(occ.group.stable.to.surplus[order(occ.group.stable.to.surplus$occ.group, occ.group.stable.to.surplus$EDR), ],
-          class = "cell-border stripe",
-          filter = "top",
-          rownames = FALSE,
-          extensions = "RowGroup",
-          options = list(scrollX = TRUE,
-                         rowGroup = list(dataSrc = c(1))))
-
-```
-
-## Occupation groups transitioning from stable to shortages
-
-<br>
-
-```{r table occupation group stable to shortages}
-occ.group.stable.to.shortage <- occ.group.shortage.surplus.comparison %>%
-  filter(transition.type == "Stable to shortage") %>%
-  select(1,3,8)
-
-datatable(occ.group.stable.to.shortage[order(occ.group.stable.to.shortage$occ.group, occ.group.stable.to.shortage$EDR), ],
-          class = "cell-border stripe",
-          filter = "top",
-          rownames = FALSE,
-          extensions = "RowGroup",
-          options = list(scrollX = TRUE,
-                         rowGroup = list(dataSrc = c(1))))
-
-
-```
-## Occupation groups transitioning from surpluses to stable
-
-<br>
-
-```{r table occupation group surplus to stable}
-occ.group.surplus.to.stable <- occ.group.shortage.surplus.comparison %>%
-  filter(transition.type == "Surplus to stable") %>%
-  select(1,3,8)
-
-datatable(occ.group.surplus.to.stable[order(occ.group.surplus.to.stable$occ.group, occ.group.surplus.to.stable$EDR), ],
-          class = "cell-border stripe",
-          filter = "top",
-          rownames = FALSE,
-          extensions = "RowGroup",
-          options = list(scrollX = TRUE,
-                         rowGroup = list(dataSrc = c(1))))
-
-```
-## Occupation groups transitioning from shortages to stable
-
-<br>
-
-```{r table occupation group with shortages to stable}
-occ.group.shortage.to.stable <- occ.group.shortage.surplus.comparison %>%
-  filter(transition.type == "Shortage to stable") %>%
-  select(1,3,8)
-
-datatable(occ.group.shortage.to.stable[order(occ.group.shortage.to.stable$occ.group, occ.group.shortage.to.stable$EDR), ],
-          class = "cell-border stripe",
-          filter = "top",
-          rownames = FALSE,
-          extensions = "RowGroup",
-          options = list(scrollX = TRUE,
-                         rowGroup = list(dataSrc = c(1))))
-
-```
-
-
-<br>
 
 # What specific occupations are driving the projections?{.tabset}
 
-Summary here
+And finally, the table below provides the specific occupations (6-digit SOC codes) that are driving the top-5 occupation groups expected to experience workforce shortages and workforce surpluses.
+
+Here's a brief summary of the main specific occupations that are projected to have workforce shortages for any occupation group that's in an EDR's top-5 most severe shortage.
+
+* Healthcare practitioners and technical (top-5 in 13 EDRs)
+  + Registered nurses (by far the highest need)
+  + Pretty much everything else under this occupation group
+  
+* Management (top-5 in 13 EDRs)
+  + General and operations manager
+  + Ag managers (especially on the western and southern parts of the state)
+  + Personal service managers (entertainment etc) - particularly in north eastern part of the state
+  + Financial managers
+  + Construction managers
+
+* Business and financial operations (top-5 in 12 EDRs)
+  + Management analysts
+  + Accountants and auditors
+  + Market research analysts
+  + Compliance officers
+  + Pretty broad overall. Many specific occupations.
+
+* Community and social services (top-5 in 10 EDRs)
+  + Substance, abuse, behavioral disorder and mental health counselors
+  + Marriage and family counselors
+  + Social workers (in general)
+
+* Computer and mathematical (top-5 in 7 EDRs)
+  + Software developers
+  + Analysts (in general)
+
+* Construction and extraction (top-5 in 4 EDRs)
+  + Carpenters
+  + Plumbers, pipefitters and steamfitters
+  + Trades (in general)
+  
+* Architecture and engineering (top-5 in 2 EDRs)
+  + Mechanical engineers
+  + Industrial engineers
+  + Civil engineers
+
+* Healthcare support (top-5 in 2 EDRs)
+  + Medical assistants
+  + Nursing assistants
+  
+Here's a brief summary of the main specific occupations that are projected to have workforce surpluses for any occupation group that's in an EDR's top-5 most severe surplus.
+
+* Food preparation and serving related (top-5 in 13 EDRs)
+  + Fast food and counter workers
+  + Waiters and waitresses
+  + Bartenders
+  + Pretty much every specific occupation within this occupation group
+
+* Office and administrative support (top-5 in 13 EDRs)
+  + Pretty much every specific occupation
+  
+* Sales related (top-5 in 13 EDRs)
+  + Cashiers
+  + Retail salespersons
+
+* Transportation and material moving (top-5 in 13 EDRs)
+  + Laborers and freight, stock and material movers
+  + Stockers and order tillers
+  + Packers and packages
+  
+* Production (top-5 in 10 EDRs) 
+  + Team assemblers (by far)
+  + Pretty much all other specific occupations are listed. It's why I have a hard time believing these projections. I just don't see it.
+
+* Personal care and service (top-5 in 3 EDRs)
+  + Childcare workers (really?! I don't think so.)
+  + Gambling services - particularly in EDR 2 - Headwaters and EDR 6W - Upper MN Valley
+  + Amusement and recreation attendants - especially in north eastern Minnesota.
+
+<br>
 
 ```{r prep specific occs driving projections, include=FALSE, cache=TRUE}
 forecast.top5.shortage.surplus.list <- occ.groups.annual.shortages.surpluses.edr %>%
