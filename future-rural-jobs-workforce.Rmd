@@ -215,6 +215,12 @@ master.job.postings.with.family.occ <- read_csv("Data/Job postings/master-job-po
 
 ```
 
+```{r master oes data, include=FALSE, cache=TRUE}
+oes.edr <- read_csv("Data/Occupations/OES/Master-oes-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+```
+
 <br>
 
 # How has the pandemic impacted employment forecasts?{.tabset}
@@ -889,5 +895,68 @@ datatable(forecast.soc.top5.occ.surplus.table[order(forecast.soc.top5.occ.surplu
                          rowGroup = list(dataSrc = c(0,2))))
 ```
 
+<br>
 
+# Overall, which regions are most at risk of continuing to have high unemployment?{.tabset}
 
+After reviewing all of this data, the big question that needs to be answered is whether there are specific regions that are being impacted the most by the pandemic and what does that mean for the future? To answer this, we have to see which regions rely most on the employment of occupations that are seeing high unemployment and will continue to see high unemployment.
+
+<br>
+
+```{r prep pct of current employment within occ groups projected to experience surpluses and shortages, include=FALSE, cache=TRUE}
+occ.group.projected.surplus.list <- occ.groups.annual.shortages.surpluses.edr %>%
+  filter(shortage.surplus == "Surplus") %>%
+  select(1,2,4)
+
+total.emp.edr <- oes.edr %>%
+  filter(OccCode == "000000") %>%
+  select(1,7) %>%
+  rename("total.emp" = 2) %>%
+  mutate(edr = str_replace(edr, "  ", " "))
+
+occ.group.projected.surplus.pct.emp <- oes.edr %>%
+  select(1,4,7) %>%
+  mutate(edr = str_replace(edr, "  ", " ")) %>%
+  right_join(occ.group.projected.surplus.list, by = c("edr", "OccCode" = "soc.level")) %>%
+  group_by(edr) %>%
+  summarise(surplus.occ.group.emp = sum(EmpCount, na.rm = TRUE)) %>%
+  ungroup() %>%
+  left_join(total.emp.edr, by = "edr") %>%
+  mutate(pct.emp = surplus.occ.group.emp / total.emp,
+         with.without.production = "Including production")
+
+occ.group.projected.surplus.wo.production.pct.emp <- oes.edr %>%
+  select(1,4,7) %>%
+  mutate(edr = str_replace(edr, "  ", " ")) %>%
+  right_join(occ.group.projected.surplus.list, by = c("edr", "OccCode" = "soc.level")) %>%
+  filter(title != "Production") %>%
+  group_by(edr) %>%
+  summarise(surplus.occ.group.emp = sum(EmpCount, na.rm = TRUE)) %>%
+  ungroup() %>%
+  left_join(total.emp.edr, by = "edr") %>%
+  mutate(pct.emp = surplus.occ.group.emp / total.emp,
+         with.without.production = "Not including production")
+
+occ.group.projected.surplus.w.and.wo.production.pct.emp <- occ.group.projected.surplus.pct.emp %>%
+  rbind(occ.group.projected.surplus.wo.production.pct.emp) %>%
+  mutate(RDCNUM = str_sub(edr, 5,6),
+         RDCNUM = trimws(RDCNUM, which = "both")) %>%
+  left_join(mn_edrs[,c(5,10)], by = "RDCNUM")
+
+```
+
+```{r maps pct of current employment within occ groups projected to experience surpluses and shortages}
+occ.group.projected.surplus.w.and.wo.production.pct.emp.map <- ggplot(occ.group.projected.surplus.w.and.wo.production.pct.emp) +
+  facet_wrap(~with.without.production, ncol = 2) +
+  geom_sf_interactive(color = "grey85", aes(geometry = geometry, fill = pct.emp, data_id = edr, tooltip = paste(edr, "\nEmployment in occupation groups projected to have workforce surpluses: ", comma(surplus.occ.group.emp, accuracy = 1), "\nTotal employment in region: ", comma(total.emp, accuracy = 1), "\nPercent of total employment: ", percent(pct.emp, accuracy = .1), sep = ""))) +
+  theme_sf+
+  scale_fill_fermenter(palette = "PuBu", direction = 1, labels = scales::percent) +
+  labs(title = "Percent of employment in occupation groups\nprojected to have workforce surpluses") +
+  theme(text = element_text(size = 18),
+        legend.position = "bottom",
+        legend.text = element_text(angle = 65, hjust = .9))
+
+girafe(ggobj = occ.group.projected.surplus.w.and.wo.production.pct.emp.map, height_svg = 10, width_svg = 10) %>%
+  girafe_options(opts_sizing(rescale = FALSE))
+
+```

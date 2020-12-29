@@ -158,6 +158,12 @@ oes.pr <- read_csv("Data/Occupations/OES/Master-oes-pr.csv") %>%
   mutate(planning.region = fct_relevel(planning.region, "Northwest", "Northeast", "Central", "Seven County Mpls-St Paul", "Southwest", "Southeast"))
 ```
 
+```{r master laborforce, include=FALSE, cache=TRUE}
+master.laborforce.edr <- read_csv("Data/Workforce/Master-laborforce-edr.csv") %>%
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+
+```
+
 
 
 <br>
@@ -265,6 +271,42 @@ datatable(ui.oes.table.edr, class = "cell-border stripe", filter = "top", rownam
 ```
 
 <br>
+
+One question is how much of the trend in Ui claims declining due to people dropping out of the workforce?
+
+<br>
+
+```{r prep ui laborforce decline pct ui decline, include=FALSE, cache=TRUE}
+ui.monthly.change.edr <- ui.edr %>%
+  gather(key = "date", value = "ui.claims", 3:(ncol(ui.edr)-1)) %>%
+  mutate(ui.claims = as.integer(ui.claims),
+         date = as_date(date, format = "%m/%d/%Y"),
+         month = month(date)) %>%
+  droplevels() %>%
+  complete(edr, date, fill = list(ui.claims = 0)) %>%
+  group_by(edr, month) %>%
+  summarise(avg.ui.claims = round(mean(ui.claims, na.rm = TRUE))) %>%
+  ungroup() %>%
+  group_by(edr) %>%
+  arrange(month) %>%
+  mutate(avg.ui.claims.change = avg.ui.claims - lag(avg.ui.claims)) %>%
+  ungroup()
+
+laborforce.change.edr <- master.laborforce.edr %>%
+  mutate(`Year/Month` = ym(`Year/Month`),
+         month = month(`Year/Month`)) %>%
+  group_by(edr) %>%
+  arrange(month) %<>%
+  mutate(labor.force.change = labor.force - lag(labor.force)) %>%
+  ungroup()
+
+ui.monthly.laborforce.change.edr <- ui.monthly.change.edr %>%
+  left_join(laborforce.change.edr[,c(2,3,4,5)], by = c("edr", "month")) %>%
+  mutate(change.ui.claims.pct.laborforce.change = avg.ui.claims.change / labor.force.change)
+
+names(ui.monthly.laborforce.change.edr)
+names(laborforce.change.edr)
+```
 
 # What occupation groups have been most impacted?{.tabset}
 
