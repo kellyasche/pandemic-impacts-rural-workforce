@@ -1,6 +1,5 @@
 ---
 title: "Pandemic impacts on unemployment"
-author: "Kelly Asche"
 output:
   html_document:
     toc: true
@@ -146,6 +145,22 @@ ui.occ.pr <- read_csv("Data/UI/Master-ui-claims-occ-pr.csv") %>%
 
 ```
 
+```{r master unemployment objects, include=FALSE, cache=TRUE}
+master.unemp.rate.edr <- read_csv("Data/Unemployment/Mth_UnempRate_NSA.csv") %>%
+  gather(key = "edr", value = "unemp.rate", 2:14) %>%
+  mutate(edr = str_replace(edr, "  ", " "),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         unemp.rate = unemp.rate / 100,
+         `Year/Month` = ym(`Year/Month`))
+
+master.unemp.edr <- read_csv("Data/Unemployment/unemp-2019-2020-edr.csv") %>%
+  gather(key = "edr", value = "unemp", 2:14) %>%
+  mutate(edr = str_replace(edr, "  ", " "),
+         edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         `Year/Month` = ym(`Year/Month`))
+
+```
+
 ```{r master oes objects, include=FALSE, cache=TRUE}
 
 oes.edr <- read_csv("Data/Occupations/OES/Master-oes-edr.csv") %>%
@@ -160,13 +175,10 @@ oes.pr <- read_csv("Data/Occupations/OES/Master-oes-pr.csv") %>%
 
 ```{r master laborforce, include=FALSE, cache=TRUE}
 master.laborforce.edr <- read_csv("Data/Workforce/Master-laborforce-edr.csv") %>%
-  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"))
+  mutate(edr = fct_relevel(edr, "EDR 1 - Northwest", "EDR 2 - Headwaters", "EDR 3 - Arrowhead", "EDR 4 - West Central", "EDR 5 - North Central", "EDR 6E- Southwest Central", "EDR 6W- Upper Minnesota Valley", "EDR 7E- East Central", "EDR 7W- Central", "EDR 8 - Southwest", "EDR 9 - South Central", "EDR 10 - Southeast", "EDR 11 - 7 County Twin Cities", "Minnesota"),
+         `Year/Month` = ym(`Year/Month`))
 
 ```
-
-
-
-<br>
 
 # How has the pandemic impacted Unemployment trends?{.tabset}
 
@@ -181,6 +193,8 @@ The other regions that were hit harder than others are in northern Minnesota. ED
 EDRs in southwest Minnesota have gone through the pandemic with the least amount of disruption in terms of unemployment. Although EDR 9 - South Central was hit relatively hard during the peak of unemployment, the other EDRs didn't have weekly continuous unemployment claims that were 10% of their 2019 workforce. In fact, the EDR with the lowest percentage in the state exists in this region - EDR 6W - Upper Minnesota Valley had weekly unemployment claims that were just over 1% of their 2019 workforce by the end of October. 
 
 Unemployment trends in Southeast Minnesota were a little different in that unemployment claims peaked a bit later. This was likely due to the layoffs in healthcare which occurred later than other industries. 
+
+Updated since October: Unemployment claims have increased over the last few months as expected. From their October lows, they are about 1 percentage point higher across most EDRs. However, they are significantly higher in some areas. EDRs in Northwest planning region have seen a significant increase since October such as EDR 5 - North Central. EDR 7E - Central has also seen a significant increase in their unemployment claims since October. Going from 7% to 11% by December.
 
 <br>
 
@@ -233,24 +247,6 @@ girafe(ggobj = ui.pct.emp.edr.plot, height_svg = 10, width_svg = 10) %>%
 
 ```
 
-## EDR - map
-
-<br>
-
-```{r map ui pct emp edr}
-ui.pct.emp.edr.map <- ggplot(ui.oes.map.edr) +
-  geom_sf_interactive(color = "grey85", aes(geometry = geometry, fill = ui.pct.empCount, data_id = edr, tooltip = paste(edr, "\nDate: ", date, "\nTotal unemployment claims: ", comma(ui.claims), "\nTotal employment: ", comma(EmpCount), "\nUnemployment as a % of employment: ", percent(ui.pct.empCount), sep = ""))) +
-  theme_sf+
-  scale_fill_fermenter(palette = "PuBu", direction = 1, labels = scales::percent) +
-  labs(title = paste("Weekly continuous unemployment insurance claims as a % of employment,\n", max(ui.oes.map.edr$date))) +
-  theme(legend.box.margin = margin(50, 0, 0, -100),
-        text = element_text(size = 18))
-
-girafe(ggobj = ui.pct.emp.edr.map, height_svg = 10, width_svg = 10) %>%
-  girafe_options(opts_sizing(rescale = FALSE))
-
-```
-
 ## EDR - table
 
 ```{r table ui pct emp edr}
@@ -270,43 +266,112 @@ datatable(ui.oes.table.edr, class = "cell-border stripe", filter = "top", rownam
 
 ```
 
-<br>
-
-One question is how much of the trend in Ui claims declining due to people dropping out of the workforce?
+## EDR - map
 
 <br>
 
-```{r prep ui laborforce decline pct ui decline, include=FALSE, cache=TRUE}
-ui.monthly.change.edr <- ui.edr %>%
-  gather(key = "date", value = "ui.claims", 3:(ncol(ui.edr)-1)) %>%
-  mutate(ui.claims = as.integer(ui.claims),
-         date = as_date(date, format = "%m/%d/%Y"),
-         month = month(date)) %>%
-  droplevels() %>%
-  complete(edr, date, fill = list(ui.claims = 0)) %>%
-  group_by(edr, month) %>%
-  summarise(avg.ui.claims = round(mean(ui.claims, na.rm = TRUE))) %>%
-  ungroup() %>%
-  group_by(edr) %>%
-  arrange(month) %>%
-  mutate(avg.ui.claims.change = avg.ui.claims - lag(avg.ui.claims)) %>%
-  ungroup()
+```{r map ui pct emp edr}
 
-laborforce.change.edr <- master.laborforce.edr %>%
-  mutate(`Year/Month` = ym(`Year/Month`),
-         month = month(`Year/Month`)) %>%
-  group_by(edr) %>%
-  arrange(month) %<>%
-  mutate(labor.force.change = labor.force - lag(labor.force)) %>%
-  ungroup()
+ui.pct.emp.edr.map <- ggplot(ui.oes.map.edr) +
+  geom_sf_interactive(color = "grey85", aes(geometry = geometry, fill = ui.pct.empCount, data_id = edr, tooltip = paste(edr, "\nDate: ", date, "\nTotal unemployment claims: ", comma(ui.claims), "\nTotal employment: ", comma(EmpCount), "\nUnemployment as a % of employment: ", percent(ui.pct.empCount), sep = ""))) +
+  theme_sf+
+  scale_fill_fermenter(palette = "PuBu", direction = 1, labels = scales::percent) +
+  labs(title = paste("Weekly continuous unemployment insurance claims as a % of employment,\n", max(ui.oes.map.edr$date))) +
+  theme(legend.box.margin = margin(50, 0, 0, -100),
+        text = element_text(size = 18))
 
-ui.monthly.laborforce.change.edr <- ui.monthly.change.edr %>%
-  left_join(laborforce.change.edr[,c(2,3,4,5)], by = c("edr", "month")) %>%
-  mutate(change.ui.claims.pct.laborforce.change = avg.ui.claims.change / labor.force.change)
+girafe(ggobj = ui.pct.emp.edr.map, height_svg = 10, width_svg = 10) %>%
+  girafe_options(opts_sizing(rescale = FALSE))
 
-names(ui.monthly.laborforce.change.edr)
-names(laborforce.change.edr)
 ```
+
+# {.unlisted .unnumbered}
+
+We can also compare the monthly unemployment rates from 2019 to 2020 to see the difference between the two. It's easy to spot when the pandemic and the resulting restrictions on business took place in Spring 2020. The unemployment rate in 2020 was between 2.5 to 7 percentage points higher in April 2020 compared to April 2019. The largest difference in the April unemployment rates were in the seven-county metro, EDR 3 - Arrowhead, and EDRs to the north such as EDR 3 - Arrowhead, EDR 2 - Headwaters, and EDR 5 - North Central.
+
+There has been improvement in the unemployment rate since that time. By October 2020 many regions in Southern Minnesota were about 1 percentage point higher than in 2019. The October 2020 rates that are closest to their 2019 rates are in EDR 4 - West Central and EDR 6W - Upper MN Valley. There continues to be a significant gap between the seven-county metro's rates between October 2020 and 2019. 
+
+<br>
+
+```{r prep 2019 unemp compared to 2020 unemp, include=FALSE, cache=TRUE}
+unemp.rate.comparison.edr <- master.unemp.rate.edr %>%
+  mutate(year = year(`Year/Month`),
+         month = month(`Year/Month`, label = TRUE),
+         data_id = seq(n())) %>%
+  filter(month != "Dec")
+```
+
+```{r chart 2019 unemp compared to 2020 unemp}
+names(unemp.rate.comparison.edr)
+unemp.rate.comparison.edr.plot <- ggplot(unemp.rate.comparison.edr, aes(month(`Year/Month`, label = TRUE), unemp.rate, group = as.factor(year), color = as.factor(year))) +
+  facet_wrap(~edr, ncol = 2) +
+  geom_smooth(se = FALSE, size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(edr, "\n", month, ", ", year, "\nUnemployment rate: ", percent(unemp.rate, accuracy = .1), sep = ""))) +
+  geom_label_repel(data = filter(unemp.rate.comparison.edr, month(`Year/Month`, label = TRUE) %in% c("Apr", "Oct")), aes(month(`Year/Month`), y = unemp.rate, label = percent(unemp.rate), group = as.factor(year)), show.legend = FALSE, size = 5) +
+  labs(x="", y = "", color="", title = "Unemployment rate 2019 vs 2020")+
+  scale_y_continuous(labels=scales::percent)+
+  scale_color_manual(values = brewer.pal(n = 3, "PuBu")) +
+  theme_line+
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = unemp.rate.comparison.edr.plot, width_svg = 10, height_svg = 15) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+```
+
+<br>
+
+Unemployment rates don't necessarily mean everything's rosy. What could be occurring is that a number of people are just dropping out of the laborforce all together, meaning that the decreases in the unemployment rate may be partially due to people no longer trying to find work.
+
+The chart below provides the trends in the number of people in the laborforce. Each month, the number in the laborforce is indexed to January 2019 values. What we typically expect to see in rural Minnesota is an "M" shape line. The laborforce increases throughout spring, peaks in summer and tends to decrease  as we approach the winter months. This is usually due to the large number of jobs that are seasonal in nature for our rural areas. Some of these employees might go on unemployment, therefore continuing to be counted as "in the laborforce" others may not and prefer to continue to work "under-the-table" through the winter.
+
+First, the big theme is that the pandemic dampened any sort of increase in the laborforce that is typically expected in the spring in summer of 2020. None of our EDR's have the typical peak like they did in July 2019.
+
+There are also plenty of EDR's that not only didn't have a typical peak, but they just flat out declined through the summer. EDRs in Northern, Central, and the Metro have experienced consistent declines in the laborforce throughout 2020. EDR 1 - Northwest, EDR 3 - Arrowhead, EDR 6E - Southwest Central, EDR 7E - East Central, EDR 7W- Central and the Seven-county Metro have all had consistent declines throughout 2020 and will likely finish the year below their January 2019 laborforce numbers.
+
+Meanwhile, EDRs in Southwest Minnesota, some in Northwest Minnesota, and Southeast have expereienced increases, although typically more subdued than usual.
+
+
+<br>
+
+```{r prep laborforce index, include=FALSE, cache=TRUE}
+lf.index.edr <- master.laborforce.edr %>%
+  group_by(edr) %>%
+  mutate(lf.index = labor.force / labor.force[`Year/Month` == min(master.laborforce.edr$`Year/Month`)]) %>%
+  ungroup() %>%
+  left_join(regions, by = "edr") %>%
+  mutate(data_id = seq(n()))
+```
+
+```{r chart laborforce index}
+lf.index.edr.plot <- ggplot(lf.index.edr, aes(`Year/Month`, lf.index, color = edr)) +
+  facet_wrap(~planning.region, ncol = 2) +
+  geom_hline(yintercept = 1, color = "black") +
+  geom_smooth(se = FALSE, size = 3) +
+  geom_point_interactive(size = 5, aes(data_id = data_id, tooltip = paste(edr, "\n", `Year/Month`, "\nPeople in laborforce: ", comma(labor.force, accuracy = 1), "\nIndex to ", min(lf.index.edr$`Year/Month`), ": ", percent(lf.index, accuracy = .1), sep = ""))) +
+  geom_label_repel(data = filter(lf.index.edr, `Year/Month` == max(lf.index.edr$`Year/Month`)), aes(x = `Year/Month`, y = lf.index, label = percent(lf.index, accuracy = .1)), show.legend = FALSE, size = 5) +
+  labs(x="", y = "", color="", title = paste("Laborforce indexed to ", min(lf.index.edr$`Year/Month`), sep = "")) +
+  scale_y_continuous(labels=scales::percent)+
+  theme_line+
+  scale_color_manual(values= color.edr,
+                     guide = guide_legend(ncol = 3)) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 18))
+
+girafe(ggobj = lf.index.edr.plot, width_svg = 10, height_svg = 10) %>%
+  girafe_options(opts_selection(type = "none"),
+                 opts_toolbar(saveaspng = FALSE) ,
+                 opts_sizing(rescale = FALSE))
+
+
+```
+
+<br>
+
+
 
 # What occupation groups have been most impacted?{.tabset}
 
@@ -490,3 +555,6 @@ datatable(ui.emp.occ.rank.edr, class = "cell-border stripe", filter = "top", row
 
 
 ```
+
+
+
