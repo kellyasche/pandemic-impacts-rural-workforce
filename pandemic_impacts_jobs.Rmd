@@ -221,7 +221,9 @@ The charts below provide the job vacancy rate for each region. The job vacancy r
 
 Before 2020, job vacancies were a significant concern for workforce development organizations in rural Minnesota. In fact, the highest vacancy rates are outside of the seven county metro. EDRs in Southwest and Northwest Minnesota had vacancy rates near or above 6%. 
 
-Since the pandemic began, job vacancy rates have decreased, but only by a few percentage points. Most regions in Greater Minnesota have vacancy rates between 3.5% and 4%, and are higher than the seven-county metro's rate of 3.2%. 
+Since the pandemic began, job vacancy rates have decreased, but only by a few percentage points. Most regions in Greater Minnesota have vacancy rates between 3.5% and 4% and actually have some of the highest rates in the state. The EDRs in Greater Minnesota where they remain lower than the seven-county metro is in EDR 5, and EDR 6W. EDR 6W - Upper MN Valley seems to be a bit of an anomaly and I don't have a good explanation for why their rates are so low. Especially considering that this region of the state has been clamoring for workforce for years.
+
+Surprisingly, the November job vacancy rate was actually the same, if not a bit higher, than previous months. I would have expected that to be lower.
 
 <br>
 
@@ -240,14 +242,47 @@ job.postings.monthly.total.emp.edr <- job.postings.monthly.total.edr %>%
   mutate(job.postings.pct.emp = job.postings.total/EmpCount,
          data_id = as.character(seq(n())))
 
-vacancy.rate.2020.edr <- job.postings.monthly.total.emp.edr %>%
-  filter(posting.month != "Nov") %>%
+vacancy.rate.2020.only.sep.edr <- job.postings.monthly.total.emp.edr %>%
+  filter(posting.month != "Sep") %>%
   group_by(edr, planning.region) %>%
   summarise(vacanrate.2020 = mean(job.postings.pct.emp),
             EmpCount = mean(EmpCount),
             avg.job.postings.total = mean(job.postings.total)) %>%
   ungroup() %>%
-  mutate(data_id = as.character(seq(n())))
+  mutate(month = "September")
+
+vacancy.rate.2020.only.oct.edr <- job.postings.monthly.total.emp.edr %>%
+  filter(posting.month != "Oct") %>%
+  group_by(edr, planning.region) %>%
+  summarise(vacanrate.2020 = mean(job.postings.pct.emp),
+            EmpCount = mean(EmpCount),
+            avg.job.postings.total = mean(job.postings.total)) %>%
+  ungroup() %>%
+  mutate(month = "October")
+
+vacancy.rate.2020.only.nov.edr <- job.postings.monthly.total.emp.edr %>%
+  filter(posting.month == "Nov") %>%
+  group_by(edr, planning.region) %>%
+  summarise(vacanrate.2020 = mean(job.postings.pct.emp),
+            EmpCount = mean(EmpCount),
+            avg.job.postings.total = mean(job.postings.total)) %>%
+  ungroup() %>%
+  mutate(month = "November")
+
+vacancy.rate.2020.sep.oct.nov.edr <- job.postings.monthly.total.emp.edr %>%
+  group_by(edr, planning.region) %>%
+  summarise(vacanrate.2020 = mean(job.postings.pct.emp),
+            EmpCount = mean(EmpCount),
+            avg.job.postings.total = mean(job.postings.total)) %>%
+  ungroup() %>%
+  mutate(month = "September - November")
+
+vacancy.rate.2020.combined.edr <- vacancy.rate.2020.only.sep.edr %>%
+  rbind(vacancy.rate.2020.only.oct.edr, vacancy.rate.2020.only.nov.edr, vacancy.rate.2020.sep.oct.nov.edr) %>%
+  mutate(month = as.factor(month),
+         month = fct_relevel(month, "September", "October", "November", "September - November"),
+         edr.labels = str_sub(edr, 1,6))
+
 ```
 
 ## Job vacancy rate, pre-pandemic
@@ -276,26 +311,26 @@ girafe(ggobj = jv.prepandemic.edr.plot, width_svg = 10, height_svg = 10) %>%
 
 ```
 
-## Job vacancy rate, September - October 2020
+## Job vacancy rate, September - November 2020
 
 <br>
 
-```{r charts job vacancy rate post-pandemic}
-
-vacancy.rate.2020.edr.plot <- ggplot(vacancy.rate.2020.edr, aes(edr, vacanrate.2020, fill = edr)) +
-  geom_col_interactive(position = "dodge", aes(data_id = data_id, tooltip = paste(edr, "\nNumber employed in 2019: ", comma(EmpCount, accuracy = 1), "\nAverage number of job postings in September and October: ", comma(avg.job.postings.total, accuracy = 1), "\nJob vacancy rate: ", percent(vacanrate.2020, accuracy = .1), sep = ""))) +
-  geom_label(size = 5, show.legend = FALSE, aes(label = percent(vacanrate.2020, accuracy = .1))) +
-  labs(x="", y = "", color="", title = "Average job postings in Sep - Oct 2020 as a percent of total jobs\nin region", caption = "MN DEED - National Labor Exchange")+
+```{r charts job vacancy rate post-pandemic 2020}
+names(vacancy.rate.2020.combined.edr)
+vacancy.rate.2020.combined.edr.plot <- ggplot(vacancy.rate.2020.combined.edr, aes(edr.labels, vacanrate.2020, fill = month, group = month)) +
+  facet_wrap(~planning.region, ncol = 2, scales = "free_x") +
+  geom_col_interactive(position = "dodge", aes(data_id = edr, tooltip = paste(edr, "\nNumber employed in 2019: ", comma(EmpCount, accuracy = 1), "\nAverage number of job postings in ", month, ": ", comma(avg.job.postings.total, accuracy = 1), "\nJob vacancy rate: ", percent(vacanrate.2020, accuracy = .1), sep = ""))) +
+  geom_label(size = 5, show.legend = FALSE, aes(label = percent(vacanrate.2020, accuracy = .1)), position = position_dodge(width = 1)) +
+  labs(x="", y = "", color="", title = "Average job postings in 2020 as a percent of total jobs\nin region", caption = "MN DEED - National Labor Exchange")+
   scale_y_continuous(labels=scales::percent)+
   theme_bar+
-  scale_fill_manual(values= color.edr,
+  scale_fill_manual(values = brewer.pal(n=4, "PuBu"),
                      guide = guide_legend(ncol = 3)) +
   theme(legend.position = "bottom",
-        text = element_text(size = 18),
-        axis.text.x = element_text(angle = 45, hjust = 1))
+        text = element_text(size = 18))
 
 
-girafe(ggobj = vacancy.rate.2020.edr.plot, width_svg = 10, height_svg = 10) %>%
+girafe(ggobj = vacancy.rate.2020.combined.edr.plot, width_svg = 10, height_svg = 12) %>%
   girafe_options(opts_selection(type = "none"),
                  opts_toolbar(saveaspng = FALSE),
                  opts_sizing(rescale = FALSE))
@@ -304,17 +339,15 @@ girafe(ggobj = vacancy.rate.2020.edr.plot, width_svg = 10, height_svg = 10) %>%
 
 <br>
 
-# How does the number of unemployment claims compare to the number of jobs available?{.tabset}
+# How does the number of unemployment claims compare to the number of jobs available?
 
-Since there are still a relatively large number of job vacancies in Greater Minnesota, it's important to know if there is a labor force to tap into. An analysis that compares the number of unemployment claims with the number of job postings indicates that the labor pool that once existed due to high unemployment during the beginning of the pandemic is quickly diminishing, particularly in Greater Minnesota.
+Since there are still a relatively large number of job vacancies in Greater Minnesota, it's important to know if there is a labor force to tap into. An analysis that compares the number of unemployment claims with the number of job postings indicates that the labor pool that once existed due to high unemployment during the beginning of the pandemic was quickly diminishing, particularly in Greater Minnesota.
 
-The charts below provide the number of weekly unique job positions available as a percentage of the weekly continuous unemployment insurance claims. The data shows that many EDRs in Southwest and Northwest Minnesota have their number of job positions available nearly equal to or more than unemployment claims by the end of October. These trends are largely due to the decline in unemployment claims rather than increasing number of job positions available, which have been relatively the same number each week from September through October.
+The charts below provide the number of weekly unique job positions available as a percentage of the weekly continuous unemployment insurance claims. The data shows that many EDRs in Southwest and Northwest Minnesota have their number of job positions available nearly equal to or more than unemployment claims by the end of October. These trends are largely due to the decline in unemployment claims rather than increasing number of job positions available, which have been relatively the same number each week from September through November
 
-<br>
+However, since the end of October the increasing unemployment claims has led to a significant decrease in the percentage of job postings of unemployment claims.  Some of the largest declines since October have occurred in Greater Minnesota, particularly in Northwest and Southwest Minnesota.
 
-
-
-## Job postings as a % of UI claims - trends
+There is likely a confounding variable here in that November is traditionally when a significant portion of the workforce is laid off for the winter. So this is likely have an outsize impact on the numbers as well so it may not be just the pandemic and the restrictions. If you refer to the previous page that compared unemployment rates in 2019 to 2020, we can see that the increasing unemployment isn't that far off from previous years. It's about .5 to 1 percentage point higher. So, this decrease in the percentage of job postings of unemployment claims is likely, somewhat normal.
 
 <br>
 
@@ -379,6 +412,7 @@ girafe(ggobj = job.postings.weekly.total.ui.edr.plot, width_svg = 10, height_svg
 
 <br>
 
+
 # What types of jobs are in-demand?{.tabset}
 
 What's a bit surprising when analyzing the job postings is the number of jobs available within occupation groups that also have high unemployment claims.
@@ -423,7 +457,6 @@ job.postings.occ.group.unique.by.month.edr <- master.job.postings.with.family %>
   uncount(positions)
 
 job.postings.occ.group.sepoctavg.edr <- job.postings.occ.group.unique.by.month.edr %>%
-  filter(posting.month < "Nov") %>%
   droplevels() %>%
   group_by(edr, posting.month, Job_Family) %>%
   summarise(positions = n()) %>%
@@ -479,7 +512,7 @@ top.5.job.family.list <- job.postings.occ.group.sepoctavg.top5.edr %>%
          Job_Family = trimws(Job_Family, "both")) %>%
   select(1,2,4)
 
-job.postings.soc.sepoctavg.edr <- job.postings.soc.unique.by.month.edr %>%
+job.postings.soc.sepoctnovavg.edr <- job.postings.soc.unique.by.month.edr %>%
   select(23, 12,25, 26,27,28) %>%
   group_by(edr, posting.month, Job_Family) %>%
   mutate(job.family.positions = n()) %>%
@@ -506,7 +539,7 @@ job.postings.soc.sepoctavg.edr <- job.postings.soc.unique.by.month.edr %>%
   mutate(job.family.pct.total = avg.job.family.positions / total.positions,
          soc.positions.pct.job.family = avg.soc.position / avg.job.family.positions)
 
-job.postings.soc.top5.edr <- job.postings.soc.sepoctavg.edr %>%
+job.postings.soc.top5.edr <- job.postings.soc.sepoctnovavg.edr %>%
   group_by(edr, Job_Family) %>%
   top_n(n = 5, wt = avg.soc.position) %>%
   arrange(desc(avg.soc.position)) %>%

@@ -160,6 +160,8 @@ The chart below provides the number of occupation groups in each region that had
 
 In Northwest Minnesota, EDR 1 - Northwest, and EDR 4 - West Central have ten or more occupation groups (of 22) that currently have more job positions than individuals filing for continuous unemployment insurance claims by the end of October. In Southern Minnesota, all of the EDRs have more than 10 occupation groups in the same situation.  
 
+Those numbers have decreased since October, largely due to the seasonality of employment in Greater Minnesota. 
+
 
 <br>
 
@@ -178,6 +180,7 @@ ui.weekly.occ.edr <- ui.occ.edr %>%
   group_by(edr, planning.region, `Dim Title`, ui.month) %>%
   mutate(week = seq(n())) %>%
   ungroup() %>%
+  filter(ui.month != "Dec") %>%
   drop_na(ui.claims)
 
 job.postings.weekly.occ.edr <- master.job.postings.with.family %>%
@@ -198,7 +201,7 @@ job.postings.weekly.occ.edr <- master.job.postings.with.family %>%
 
 ui.job.postings.weekly.occ.edr <- ui.weekly.occ.edr %>%
   full_join(job.postings.weekly.occ.edr[,c(1,2,3,4,5,6,7)], by = c("edr", "planning.region", "ui.month" = "posting.month", "week", `Dim Title` = "Job_Family")) %>%
-  filter(ui.month %in% c("Sep", "Oct"),
+  filter(ui.month %in% c("Sep", "Oct", "Nov"),
          `Dim Title` != "Total Claims",
          edr != "Minnesota") %>%
   group_by(edr, planning.region, ui.month, week) %>%
@@ -207,8 +210,6 @@ ui.job.postings.weekly.occ.edr <- ui.weekly.occ.edr %>%
   mutate(ui.claims = ifelse(is.na(ui.claims), 0, ui.claims),
          job.postings = ifelse(is.na(job.postings), 0, job.postings),
          job.posting.ui.difference = job.postings - ui.claims)
-
-
 
 labor.shortage.edr <- ui.job.postings.weekly.occ.edr %>%
   mutate(shortage.surplus = ifelse(job.posting.ui.difference > 0, "Shortage", NA)) %>%
@@ -219,7 +220,8 @@ labor.shortages.occ.number.edr <- labor.shortage.edr %>%
   group_by(edr, planning.region, ui.date) %>%
   summarise(number.occ.shortages = n()) %>%
   ungroup() %>% 
-  mutate(data_id = seq(n()))
+  mutate(data_id = seq(n())) %>%
+  drop_na(ui.date)
 
 labor.surplus.edr <- ui.job.postings.weekly.occ.edr %>%
   mutate(shortage.surplus = ifelse(job.posting.ui.difference < 0, "Surplus", NA)) %>%
@@ -231,8 +233,6 @@ labor.surpluses.occ.number.edr <- labor.surplus.edr %>%
   summarise(number.occ.surpluses = n()) %>%
   ungroup() %>% 
   mutate(data_id = seq(n()))
-
-
 
 ```
 
@@ -290,8 +290,30 @@ Analysis of the data shows that there were 16 different occupation groups experi
 
 What is apparent is that there is significant breadth to the occupation groups that have workforce shortages. Even for occupation groups such as computer and mathematical which one might view as being largely available in the seven county metro is actually facing shortages in 7 of our 13 EDRs. 
 
+Comparing October vs November a few occupational groups see an increase in the number of EDRs in which they are facing workforce shortages.
+
+* Management - from 1 to 6 EDRs
+* Healthcare practitioners and technical - from 12 to 13 EDRs
+* Community and social services - from 11 to 13 EDRs
+* Computer and mathematical - from 7 to 10 EDRs
+* Architecture and engineering - from 8 to 9 EDRs
+* Business and financial operations - from 2 to 7 EDRs
+* Management - from 1 to 6 EDRs
+* Personal care and service - from 3 to 6 EDRs
+* Protective service - from 3 to 6 EDRs
+* Arts, design, entertainment, sports, and media - from 2 to 5 EDRs
+* Healthcare support - from 0 to 5 EDRs
+* Installation, maintenance and repair - from 2 to 5 EDRs
+* Office and administrative support - from 1 to 5 EDRs
+* Legal - from 3 to 4 EDRs
+
+Here are the occupational groups that dropped in the number of EDRs in which they are experiencing workforce shortages
+* Transportation and material moving - from 4 to 1 EDR
+* Buildings and grounds cleaning and maintenance - from 1 to 0 EDRs
+
 
 <br>
+
 
 ```{r table number of edrs occupation groups are in with shortages}
 ui.job.postings.octavg.edr <- ui.job.postings.weekly.occ.edr %>%
@@ -329,6 +351,46 @@ labor.surplus.octavg.occ.num.edr <- ui.job.postings.octavg.edr %>%
 write_csv(labor.surplus.octavg.occ.num.edr, "Data/Forecasts/current-occ-group-surplus-num-edrs.csv")
 write_csv(labor.shortage.octavg.occ.num.edr, "Data/Forecasts/current-occ-group-shortage-num-edrs.csv")
 
+ui.job.postings.novavg.edr <- ui.job.postings.weekly.occ.edr %>%
+  filter(ui.month == "Nov",
+         `Dim Title` != "unknown") %>%
+  group_by(edr, `Dim Title`) %>%
+  summarise(avg.job.posting.ui.difference = round(mean(job.posting.ui.difference))) %>%
+  ungroup() %>%
+  mutate(shortage.surplus = ifelse(avg.job.posting.ui.difference > 0, "Shortage", "Surplus"))
+
+labor.shortage.novavg.occ.num.edr <- ui.job.postings.novavg.edr %>%
+  filter(shortage.surplus == "Shortage") %>%
+  group_by(`Dim Title`) %>%
+  distinct(edr) %>%
+  summarise(num.edrs = n()) %>%
+  ungroup() %>%
+  mutate(pct.edrs = num.edrs / 13) %>%
+  arrange(desc(num.edrs)) %>%
+  rename(`Occ Group` = 1,
+         `Number of EDRs with workforce shortage` = 2,
+         `% of EDRs with workforce shortage` = 3)
+
+labor.surplus.novavg.occ.num.edr <- ui.job.postings.novavg.edr %>%
+  filter(shortage.surplus == "Surplus") %>%
+  group_by(`Dim Title`) %>%
+  distinct(edr) %>%
+  summarise(num.edrs = n()) %>%
+  ungroup() %>%
+  mutate(pct.edrs = num.edrs / 13) %>%
+  arrange(desc(num.edrs)) %>%
+  rename(`Occ Group` = 1,
+         `Number of EDRs with workforce surplus` = 2,
+         `% of EDRs with workforce surplus` = 3)
+
+
+```
+
+## October occupational groups - shortages
+
+
+```{r table occupational groups shortages october}
+
 kable(format = "html", labor.shortage.octavg.occ.num.edr, escape = F, align = "c", caption = "Number of EDRs where an occupation group was facing a workforce shortage using the average difference between job postings and unemployment claims through the month of October.") %>%
   kable_styling(bootstrap_options = "striped", full_width = TRUE) %>%
   scroll_box(width = "100%", height = "100%")
@@ -336,7 +398,20 @@ kable(format = "html", labor.shortage.octavg.occ.num.edr, escape = F, align = "c
 
 ```
 
+## November occupational groups - shortages
+
+```{r table occupational groups shortages november}
+
+kable(format = "html", labor.shortage.novavg.occ.num.edr, escape = F, align = "c", caption = "Number of EDRs where an occupation group was facing a workforce shortage using the average difference between job postings and unemployment claims through the month of November.") %>%
+  kable_styling(bootstrap_options = "striped", full_width = TRUE) %>%
+  scroll_box(width = "100%", height = "100%")
+
+
+```
+
 <br>
+
+# Specific occupations within occupational groups with shortages{.tabset}
 
 The first tab below - "Occupation groups with workforce shortages in each EDR" - provides the occupation groups that are facing workforce shortages in each of the EDRs using the weekly difference between job postings and unemployment claims averaged for the month of October. It also provides how many more job positions were posted on average weekly basis compared to the number of unemployment claims for October. 
 
